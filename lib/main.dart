@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Quản Lý Thu Chi',
+      title: 'Tổng Quan Thu Chi',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const HomePage(),
     );
