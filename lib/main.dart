@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'models/transaction.dart';
 import 'database/database_helper.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,6 +34,7 @@ class _HomePageState extends State<HomePage> {
   double _balance = 0.0;
   double _income = 0.0;
   double _expense = 0.0;
+  Map<String, Map<String, double>> _chartData = {};
 
   @override
   void initState() {
@@ -43,11 +46,20 @@ class _HomePageState extends State<HomePage> {
     List<Transaction> transactions = await _dbHelper.getTransactions();
     double income = 0.0;
     double expense = 0.0;
+    Map<String, Map<String, double>> chartData = {};
     for (var tx in transactions) {
+      String dateKey = DateFormat('dd/MM/yyyy').format(tx.date);
+      if (!chartData.containsKey(dateKey)) {
+        chartData[dateKey] = {'income': 0.0, 'expense': 0.0};
+      }
       if (tx.type == 'income') {
         income += tx.amount;
+        chartData[dateKey]!['income'] =
+            chartData[dateKey]!['income']! + tx.amount;
       } else {
         expense += tx.amount;
+        chartData[dateKey]!['expense'] =
+            chartData[dateKey]!['expense']! + tx.amount;
       }
     }
     setState(() {
@@ -55,6 +67,7 @@ class _HomePageState extends State<HomePage> {
       _income = income;
       _expense = expense;
       _balance = income - expense;
+      _chartData = chartData;
     });
   }
 
@@ -118,6 +131,7 @@ class _HomePageState extends State<HomePage> {
                         lastDate: DateTime(2100),
                       )) ??
                       date;
+                  setState(() {});
                 },
                 child: Text(
                     'Chọn ngày: ${date.toLocal().toString().split(' ')[0]}'),
@@ -137,6 +151,83 @@ class _HomePageState extends State<HomePage> {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildBarChart() {
+    List<BarChartGroupData> barGroups = [];
+    List<String> dateKeys = _chartData.keys.toList();
+    dateKeys.sort((a, b) => DateFormat('dd/MM/yyyy')
+        .parse(a)
+        .compareTo(DateFormat('dd/MM/yyyy').parse(b)));
+
+    for (int i = 0; i < dateKeys.length && i < 7; i++) {
+      String date = dateKeys[i];
+      double income = _chartData[date]!['income']!;
+      double expense = _chartData[date]!['expense']!;
+      barGroups.add(
+        BarChartGroupData(
+          x: i,
+          barRods: [
+            BarChartRodData(
+              toY: income,
+              color: Colors.green,
+              width: 10,
+            ),
+            BarChartRodData(
+              toY: expense,
+              color: Colors.red,
+              width: 10,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      height: 200,
+      padding: const EdgeInsets.all(16.0),
+      child: BarChart(
+        BarChartData(
+          alignment: BarChartAlignment.spaceAround,
+          barGroups: barGroups,
+          titlesData: FlTitlesData(
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 40,
+                getTitlesWidget: (value, meta) {
+                  return Text(
+                    NumberFormat.compactCurrency(locale: 'vi_VN', symbol: '')
+                        .format(value),
+                    style: const TextStyle(fontSize: 10),
+                  );
+                },
+              ),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (value, meta) {
+                  if (value.toInt() < dateKeys.length) {
+                    return Text(
+                      dateKeys[value.toInt()].split('/')[0], // Hiển thị ngày
+                      style: const TextStyle(fontSize: 10),
+                    );
+                  }
+                  return const Text('');
+                },
+              ),
+            ),
+            topTitles:
+                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles:
+                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          ),
+          borderData: FlBorderData(show: false),
+          gridData: const FlGridData(show: false),
+        ),
+      ),
     );
   }
 
@@ -160,6 +251,17 @@ class _HomePageState extends State<HomePage> {
                   Text('Chi: ${_expense.toStringAsFixed(0)} ₫'),
                 ],
               ),
+            ),
+          ),
+          Card(
+            margin: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                const Text('Biểu đồ Thu Chi',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                _buildBarChart(),
+              ],
             ),
           ),
           Expanded(
