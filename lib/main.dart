@@ -14,7 +14,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Tổng Quan Thu Chi',
+      debugShowCheckedModeBanner: false,
+      title: 'Sổ Thu Chi',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const HomePage(),
     );

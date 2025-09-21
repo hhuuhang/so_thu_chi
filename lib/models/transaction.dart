@@ -5,7 +5,7 @@ class Transaction {
   final String title;
   final double amount;
   final DateTime date;
-  final String type; // 'income' hoặc 'expense'
+  final String type;
 
   Transaction({
     this.id,
