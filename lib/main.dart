@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'screens/calendar_screen.dart';
-import 'screens/input_screen.dart';
-import 'screens/report_screen.dart';
+import 'screens/calendar_screen/calendar_screen.dart';
+import 'screens/input_screen/input_screen.dart';
+import 'screens/report_screen/report_screen.dart';
+import 'screens/setting_screen/setting_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -35,6 +36,7 @@ class _MainScreenState extends State<MainScreen> {
     CalendarScreen(),
     InputScreen(),
     ReportScreen(),
+    SettingPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -53,6 +55,7 @@ class _MainScreenState extends State<MainScreen> {
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
@@ -65,6 +68,10 @@ class _MainScreenState extends State<MainScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart),
             label: 'Báo Cáo',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Cài Đặt',
           ),
         ],
         currentIndex: _selectedIndex,

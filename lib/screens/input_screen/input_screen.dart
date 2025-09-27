@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/transaction.dart';
-import '../database/database_helper.dart';
+import '../../models/transaction.dart';
+import '../../database/database_helper.dart';
 import 'package:intl/intl.dart';
 
 class InputScreen extends StatefulWidget {
@@ -25,7 +25,7 @@ class _InputPageStateState extends State<InputScreen> {
     _loadTransactions();
   }
 
-   Future<void> _loadTransactions() async {
+  Future<void> _loadTransactions() async {
     List<Transaction> transactions = await _dbHelper.getTransactions();
     Map<String, Map<String, double>> chartData = {};
     for (var tx in transactions) {
@@ -43,7 +43,7 @@ class _InputPageStateState extends State<InputScreen> {
     }
   }
 
- void _addTransaction() async {
+  void _addTransaction() async {
     // Get values from controllers
     String title = _titleController.text;
     double amount = double.tryParse(_amountController.text) ?? 0.0;

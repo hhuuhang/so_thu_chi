@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/transaction.dart';
-import '../database/database_helper.dart';
+import '../../models/transaction.dart';
+import '../../database/database_helper.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 
@@ -25,7 +25,7 @@ class _ReportPagStateState extends State<ReportScreen> {
     _loadTransactions();
   }
 
-   Future<void> _loadTransactions() async {
+  Future<void> _loadTransactions() async {
     List<Transaction> transactions = await _dbHelper.getTransactions();
     double income = 0.0;
     double expense = 0.0;
@@ -137,7 +137,7 @@ class _ReportPagStateState extends State<ReportScreen> {
     );
   }
 
-   Widget _buildBarChart() {
+  Widget _buildBarChart() {
     List<BarChartGroupData> barGroups = [];
     List<String> dateKeys = _chartData.keys.toList();
     dateKeys.sort((a, b) => DateFormat('dd/MM/yyyy')
@@ -214,7 +214,7 @@ class _ReportPagStateState extends State<ReportScreen> {
     );
   }
 
-   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Quản Lý Thu Chi')),
