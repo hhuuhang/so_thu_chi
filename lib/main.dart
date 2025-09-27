@@ -3,6 +3,7 @@ import 'screens/calendar_screen/calendar_screen.dart';
 import 'screens/input_screen/input_screen.dart';
 import 'screens/report_screen/report_screen.dart';
 import 'screens/setting_screen/setting_screen.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,6 +15,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('vi', 'VN'), // Hỗ trợ Tiếng Việt
+        Locale('en', ''),
+      ],
+      locale: const Locale('vi', 'VN'),
       debugShowCheckedModeBanner: false,
       title: 'Sổ Thu Chi',
       theme: ThemeData(primarySwatch: Colors.blue),
