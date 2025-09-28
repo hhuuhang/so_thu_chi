@@ -1,12 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'screens/calendar_screen/calendar_screen.dart';
 import 'screens/input_screen/input_screen.dart';
 import 'screens/report_screen/report_screen.dart';
 import 'screens/setting_screen/setting_screen.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
+
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [
+        Locale('vi'),
+        Locale('en'),
+      ],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('vi'),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -15,18 +28,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('vi', 'VN'), // Hỗ trợ Tiếng Việt
-        Locale('en', ''),
-      ],
-      locale: const Locale('vi', 'VN'),
-      debugShowCheckedModeBanner: false,
       title: 'Sổ Thu Chi',
+      debugShowCheckedModeBanner: false,
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const MainScreen(),
     );
@@ -47,7 +53,7 @@ class _MainScreenState extends State<MainScreen> {
     CalendarScreen(),
     InputScreen(),
     ReportScreen(),
-    SettingPage(),
+    SettingsScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -60,29 +66,41 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Center(child: Text('Sổ Thu Chi')),
+        title: Center(child: Text("appTitle".tr())),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.language),
+            onPressed: () {
+              if (context.locale.languageCode == 'vi') {
+                context.setLocale(const Locale('en', 'US'));
+              } else {
+                context.setLocale(const Locale('vi', 'VN'));
+              }
+            },
+          ),
+        ],
       ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        items: const <BottomNavigationBarItem>[
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'Lịch',
+            icon: const Icon(Icons.calendar_today),
+            label: "calendar".tr(),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.add),
-            label: 'Nhập vào',
+            icon: const Icon(Icons.add),
+            label: "input".tr(),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: 'Báo Cáo',
+            icon: const Icon(Icons.bar_chart),
+            label: "report".tr(),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Cài Đặt',
+            icon: const Icon(Icons.settings),
+            label: "settings".tr(),
           ),
         ],
         currentIndex: _selectedIndex,

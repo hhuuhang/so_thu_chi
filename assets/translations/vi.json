@@ -1,0 +1,16 @@
+{
+  "appTitle": "Quản lý Thu Chi",
+  "calendar": "Lịch",
+  "input": "Nhập vào",
+  "report": "Báo cáo",
+  "settings": "Cài đặt",
+  "balance": "Số dư hiện tại",
+  "income": "Thu",
+  "expense": "Chi",
+  "transactionHistory": "Lịch sử Giao dịch",
+  "noTransactions": "Chưa có giao dịch nào.",
+  "transactionDeleted": "Đã xóa giao dịch thành công.",
+  "chartTitle": "Biểu đồ Thu Chi 7 ngày",
+  "selectLanguage": "Chọn Ngôn ngữ",
+  "hello": "Xin chào"
+}

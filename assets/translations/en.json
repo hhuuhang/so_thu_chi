@@ -1,0 +1,16 @@
+{
+  "appTitle": "Expense Manager",
+  "calendar": "Calendar",
+  "input": "Input",
+  "report": "Report",
+  "settings": "Settings",
+  "balance": "Current Balance",
+  "income": "Income",
+  "expense": "Expense",
+  "transactionHistory": "Transaction History",
+  "noTransactions": "No transactions yet.",
+  "transactionDeleted": "Transaction deleted successfully.",
+  "chartTitle": "7-day Income & Expense Chart",
+  "selectLanguage": "Select Language",
+  "hello": "Hello"
+}
