@@ -1,42 +1,86 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
   @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+class _SettingsScreenState extends State<SettingsScreen> {
+  String? _selectedLang;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // FIX LỖI: Truy cập context.locale an toàn tại đây
+    _selectedLang ??= context.locale.languageCode;
+  }
+
+  Future<void> _changeLanguage(String langCode) async {
+        final newLocale = Locale(langCode);
+
+        if (!mounted) return;
+
+        // 1. Thay đổi ngôn ngữ toàn cục.
+        // Dòng này khiến toàn bộ app UI được rebuild ngay lập tức.
+        await context.setLocale(newLocale); 
+
+        // 2. Cập nhật trạng thái Dropdown cục bộ
+        if (mounted) {
+            setState(() {
+                _selectedLang = langCode; 
+            });
+        }
+        
+        // 3. Lưu SharedPreferences sau cùng
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('langCode', langCode);
+    }
+
+  @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Setting Screen'),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("settings".tr()), 
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "language".tr(),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            DropdownButton<String>(
+              value: _selectedLang,
+              items: const [
+                DropdownMenuItem(
+                  value: "vi",
+                  child: Text("Tiếng Việt"),
+                ),
+                DropdownMenuItem(
+                  value: "en",
+                  child: Text("English"),
+                ),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  _changeLanguage(value);
+                }
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
-
-
-// import 'package:flutter/material.dart';
-// import 'package:flutter_localization/flutter_localization.dart';
-// import '../../l10n/app_localization.dart';
-
-// class SettingsScreen extends StatelessWidget {
-//   const SettingsScreen({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final t = FlutterLocalization.instance;
-
-//     return Center(
-//       child: Column(
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: [
-//           ElevatedButton(
-//             onPressed: () => t.translate(AppLocale.VIETNAMESE),
-//             child: Text(t.getString('selectLanguage') + ": Tiếng Việt"),
-//           ),
-//           ElevatedButton(
-//             onPressed: () => t.translate(AppLocale.ENGLISH),
-//             child: Text(t.getString('selectLanguage') + ": English"),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+
 import 'screens/calendar_screen/calendar_screen.dart';
 import 'screens/input_screen/input_screen.dart';
 import 'screens/report_screen/report_screen.dart';
@@ -15,8 +16,9 @@ void main() async {
         Locale('vi'),
         Locale('en'),
       ],
-      path: 'assets/translations',
+      path: 'assets/translations', // thư mục chứa file JSON
       fallbackLocale: const Locale('vi'),
+      startLocale: const Locale('vi'), // ✅ mặc định Tiếng Việt
       child: const MyApp(),
     ),
   );
@@ -28,7 +30,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Sổ Thu Chi',
+      title: "aA",
       debugShowCheckedModeBanner: false,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
@@ -49,40 +51,36 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 1;
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    CalendarScreen(),
-    InputScreen(),
-    ReportScreen(),
-    SettingsScreen(),
-  ];
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
 
+  // tạo widget theo index (tránh lỗi layout)
+  Widget _getScreen(int index) {
+    switch (index) {
+      case 0:
+        return const CalendarScreen();
+      case 1:
+        return const InputScreen();
+      case 2:
+        return const ReportScreen();
+      case 3:
+        return const SettingsScreen();
+      default:
+        return const CalendarScreen();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final currentLocale = context.locale; 
     return Scaffold(
       appBar: AppBar(
         title: Center(child: Text("appTitle".tr())),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.language),
-            onPressed: () {
-              if (context.locale.languageCode == 'vi') {
-                context.setLocale(const Locale('en', 'US'));
-              } else {
-                context.setLocale(const Locale('vi', 'VN'));
-              }
-            },
-          ),
-        ],
       ),
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
+      body: _getScreen(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: [

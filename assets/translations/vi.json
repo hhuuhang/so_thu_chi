@@ -1,9 +1,10 @@
 {
-  "appTitle": "Quản lý Thu Chi",
+  "appTitle": "Sổ Thu Chi",
   "calendar": "Lịch",
   "input": "Nhập vào",
   "report": "Báo cáo",
   "settings": "Cài đặt",
+  "language": "Ngôn ngữ",
   "balance": "Số dư hiện tại",
   "income": "Thu",
   "expense": "Chi",
