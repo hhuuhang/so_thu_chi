@@ -16,7 +16,7 @@ void main() async {
         Locale('vi'),
         Locale('en'),
       ],
-      path: 'assets/translations', // thư mục chứa file JSON
+      path: 'assets/translations',
       fallbackLocale: const Locale('vi'),
       startLocale: const Locale('vi'), // ✅ mặc định Tiếng Việt
       child: const MyApp(),
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "aA",
+      title: "So Thu Chi",
       debugShowCheckedModeBanner: false,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
