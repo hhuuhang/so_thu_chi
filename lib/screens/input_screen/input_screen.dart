@@ -13,21 +13,18 @@ class InputScreen extends StatefulWidget {
 
 class _InputPageStateState extends State<InputScreen> {
   final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _amountController = TextEditingController(text: '0');
   // String title = '';
   // double amount = 0.0;
   String type = 'income';
   DateTime date = DateTime.now();
 
-   bool _isNumpadVisible = false;
-  final FocusNode _amountFocusNode = FocusNode();
 
   final DatabaseHelper _dbHelper = DatabaseHelper();
   @override
   void initState() {
     super.initState();
     _loadTransactions();
-    _amountFocusNode.addListener(_handleFocusChange);
   }
 
   Future<void> _loadTransactions() async {
@@ -79,29 +76,17 @@ class _InputPageStateState extends State<InputScreen> {
     }
   }
 
-  void _handleFocusChange() {
-    // Nếu TextField Số tiền nhận focus
-    if (_amountFocusNode.hasFocus) {
-      // Khi nhận focus, ẩn bàn phím mặc định (nếu lỡ hiện) và hiện Numpad custom
-      FocusManager.instance.primaryFocus?.unfocus();
-      setState(() {
-        _isNumpadVisible = true;
-      });
-    } else {
-      // Nếu mất focus, ẩn Numpad custom
-      setState(() {
-        _isNumpadVisible = false;
-      });
-    }
-  }
-
    // Hàm xử lý nhập phím (được truyền vào CustomNumpad)
   void _handleKeyPress(String value) {
     // Logic cập nhật số tiền
     String currentText = _amountController.text;
     
     // Ngăn chặn nhiều dấu chấm thập phân
-    if (value == '.' && currentText.contains('.')) return;
+     
+    if (value == '.') {
+      if (currentText.contains('.')) return; // Chỉ cho phép 1 dấu chấm
+      if (currentText.isEmpty || currentText == '0') currentText = '0';
+    }
     
     setState(() {
       if (currentText == '0' && value != '.') {
@@ -138,8 +123,6 @@ class _InputPageStateState extends State<InputScreen> {
   void dispose() {
     _titleController.dispose();
     _amountController.dispose();
-    _amountFocusNode.removeListener(_handleFocusChange); // Rất quan trọng!
-    _amountFocusNode.dispose();
     super.dispose();
   }
 
@@ -156,72 +139,81 @@ class _InputPageStateState extends State<InputScreen> {
   @override
   Widget build(BuildContext context) {
     // Đảm bảo ẩn bàn phím mặc định khi nhấn ra ngoài khu vực nhập
-    return GestureDetector(
-      onTap: () {
-        // Mất focus khỏi bất kỳ TextField nào
-        FocusScope.of(context).unfocus();
-        // Ẩn Numpad custom
-        setState(() {
-          _isNumpadVisible = false;
-        });
-      },
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // ... (Tiêu đề và các phần tử khác giữ nguyên)
-
-            // 1. TextField cho Mô tả (Title) - giữ nguyên
-            TextField(
-              controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Mô tả'),
-              onTap: () => setState(() => _isNumpadVisible = false), // Ẩn numpad nếu click vào Title
-            ),
-            
-            // 2. TextField cho Số tiền (Amount) - CHỈNH SỬA
-            TextField(
-              controller: _amountController,
-              decoration: const InputDecoration(labelText: 'Số tiền'),
-              // QUAN TRỌNG: Ngăn bàn phím mặc định hiện lên
-              readOnly: true, 
-              // Bỏ keyboardType vì đã dùng readOnly
-              showCursor: true, // Hiển thị con trỏ để người dùng biết đang nhập
-              focusNode: _amountFocusNode, // Gắn FocusNode
-              textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            
-            // ... (DropdownButton và TextButton giữ nguyên)
-            
-            const SizedBox(height: 20),
-            
-            ElevatedButton(
-              onPressed: _addTransaction,
-              child: const Text('Thêm'),
-            ),
-            
-            // QUAN TRỌNG: Vị trí của bàn phím custom
-            // Sử dụng Spacer để đẩy các phần tử khác lên trên bàn phím
-            SizedBox(height: _isNumpadVisible ? 10 : 0),
-            
-            // Bàn phím custom
-            if (_isNumpadVisible)
-              CustomNumpad(
-                onKeyPress: _handleKeyPress,
-                // Chắc chắn rằng _handleErasePress không có tham số (VoidCallback)
-                onErasePress: _handleErasePress, 
-                buttonColor: Colors.indigo.shade400,
-                textColor: Colors.white,
-                buttonSize: 70.0,
-                fontSize: 28.0,
-                specialValue: '.',
-              ),
+     return Scaffold(
+      // Body được chia thành 2 phần: phần cuộn (inputs) và phần cố định (numpad)
+      body: Column(
+        children: [
+          // 1. PHẦN TRÊN: Dữ liệu nhập (có thể cuộn)
+          Expanded( 
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              // Bao bọc bằng GestureDetector để cho phép bỏ focus khỏi Title nếu có
+              child: GestureDetector(
+                onTap: () {
+                   // Bỏ focus khỏi các text field trong vùng cuộn
+                   FocusManager.instance.primaryFocus?.unfocus(); 
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Thêm Giao Dịch',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    
+                    // TextField Mô tả (sử dụng bàn phím hệ thống)
+                    TextField(
+                      controller: _titleController,
+                      decoration: const InputDecoration(labelText: 'Mô tả'),
+                      keyboardType: TextInputType.text,
+                    ),
+                    
+                    // TextField Số tiền (Không readOnly để có con trỏ, nhưng KHÔNG dùng keyboardType)
+                    TextField(
+                      controller: _amountController,
+                      decoration: const InputDecoration(labelText: 'Số tiền'),
+                      // Đặt readOnly: true nếu bạn muốn ngăn gõ tay hoàn toàn
+                      // Đặt readOnly: false nếu bạn muốn cho phép gõ tay/dán số
+                      readOnly: true, 
+                      showCursor: true, 
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    
+                    // ... (DropdownButton và TextButton giữ nguyên)
+                    
+                    // Thêm khoảng trống lớn để đảm bảo SingleChildScrollView hoạt động tốt
+                    const SizedBox(height: 50),
+                    
+                    // Nút Thêm và Nút Test (giữ nguyên)
+                    ElevatedButton(
+                      onPressed: _addTransaction,
+                      child: const Text('Thêm'),
+                    ),
+                    // Thêm nút test (nếu cần)
               
-            // Tạo khoảng trống đệm nếu Numpad không hiện, để SingleChildScrollView không quá ngắn
-            SizedBox(height: _isNumpadVisible ? 0 : 300),
-          ],
-        ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // 2. PHẦN DƯỚI: Bàn phím custom (Cố định, không cuộn)
+          CustomNumpad(
+            onKeyPress: _handleKeyPress,
+            onErasePress: _handleErasePress,
+            buttonColor: Colors.indigo.shade400,
+            textColor: Colors.white,
+            buttonSize: 70.0,
+            fontSize: 28.0,
+            specialValue: '.',
+          ),
+        ],
       ),
     );
   }
