@@ -168,12 +168,11 @@ class _ReportScreenState extends State<ReportScreen> {
       builder: (context, child) {
         if (_controller.isLoading) {
           return const Center(
-            child: CircularProgressIndicator(), // Hiển thị vòng xoay tải
+            child: CircularProgressIndicator(),
           );
         }
         return Column(
           children: [
-            // # THẺ TỔNG QUAN (Card)
             Card(
               margin: const EdgeInsets.all(8.0),
               child: Padding(
