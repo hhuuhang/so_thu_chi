@@ -3,6 +3,80 @@ import 'package:flutter/material.dart';
 // Định nghĩa kiểu hàm callback khi một phím được bấm
 typedef NumpadCallback = void Function(String value);
 
+class _NumpadButton extends StatefulWidget {
+  final String value;
+  final NumpadCallback onPressed;
+  final double size;
+  final double fontSize;
+  final Color buttonColor;
+  final Color pressedColor; 
+  final Color textColor;
+
+  const _NumpadButton({
+    required this.value,
+    required this.onPressed,
+    required this.size,
+    required this.fontSize,
+    required this.buttonColor,
+    required this.pressedColor,
+    required this.textColor,
+  });
+
+  @override
+  State<_NumpadButton> createState() => _NumpadButtonState();
+}
+
+class _NumpadButtonState extends State<_NumpadButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _isPressed ? widget.pressedColor : widget.buttonColor;
+
+    return Container(
+      width: widget.size,
+      height: widget.size,
+      margin: const EdgeInsets.all(8.0),
+      child: GestureDetector( // Sử dụng GestureDetector để bắt sự kiện chạm
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) {
+          setState(() => _isPressed = false);
+          widget.onPressed(widget.value); // Gọi callback khi nhả phím
+        },
+        onTapCancel: () => setState(() => _isPressed = false),
+        onLongPressUp: () => setState(() => _isPressed = false),
+        
+        child: AnimatedContainer( // Dùng AnimatedContainer để chuyển màu mượt mà
+          duration: const Duration(milliseconds: 100),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha((255 * 0.15).round()),
+                blurRadius: 3,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Text(
+            widget.value,
+            style: TextStyle(
+              fontSize: widget.fontSize,
+              color: widget.textColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ----------------------------------------------------
+// WIDGET CUSTOM NUMPAD (Stateless)
+// ----------------------------------------------------
 class CustomNumpad extends StatelessWidget {
   final NumpadCallback onKeyPress;
   final VoidCallback onErasePress;
@@ -10,10 +84,10 @@ class CustomNumpad extends StatelessWidget {
   final Color textColor;
   final double buttonSize;
   final double fontSize;
+  final String specialValue; //phím đặc biệt
   
-  // Tùy chọn: Widget cho phím đặc biệt (ví dụ: dấu chấm, enter)
-  // final Widget? specialButton;
-  // final String specialValue;
+  //THÊM MÀU KHI NHẤN
+  final Color pressedColor;
 
   const CustomNumpad({
     super.key,
@@ -23,49 +97,32 @@ class CustomNumpad extends StatelessWidget {
     this.textColor = Colors.white,
     this.buttonSize = 80.0,
     this.fontSize = 30.0,
-    // this.specialButton,
-    // this.specialValue = '.', // Giá trị mặc định cho phím đặc biệt
-  });
+    this.specialValue = '.',
+    Color? pressedColor,
+  }) : this.pressedColor = pressedColor ?? Colors.black54; // Gán màu nhấn tĩnh hoặc mặc định
 
-  // Widget riêng để tạo một nút bấm số
-  Widget _buildButton(String value, VoidCallback onPressed) {
-    return Container(
-      width: buttonSize,
-      height: buttonSize,
-      margin: const EdgeInsets.all(8.0),
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: buttonColor,
-          shape: const CircleBorder(),
-          padding: EdgeInsets.zero,
-        ),
-        child: Text(
-          value,
-          style: TextStyle(
-            fontSize: fontSize,
-            color: textColor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
+  // Widget riêng để tạo một nút bấm số/đặc biệt
+  Widget _buildButton(String value) {
+    return _NumpadButton(
+      value: value,
+      onPressed: onKeyPress,
+      size: buttonSize,
+      fontSize: fontSize,
+      buttonColor: buttonColor,
+      pressedColor: pressedColor,
+      textColor: textColor,
     );
   }
 
-  // Widget riêng để tạo nút xoá (Back button)
+  // Widget riêng để tạo nút xoá (Back button) - Sử dụng InkWell cho hiệu ứng gợn sóng mặc định
   Widget _buildEraseButton() {
     return Container(
       width: buttonSize,
       height: buttonSize,
       margin: const EdgeInsets.all(8.0),
-      child: ElevatedButton(
-        onPressed: onErasePress,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent, // Màu nền trong suốt
-          shadowColor: Colors.transparent,
-          shape: const CircleBorder(),
-          padding: EdgeInsets.zero,
-        ),
+      child: InkWell( // Sử dụng InkWell vì nó đã có hiệu ứng nhấn tích hợp
+        onTap: onErasePress,
+        borderRadius: BorderRadius.circular(buttonSize / 2),
         child: Icon(
           Icons.backspace_outlined,
           color: buttonColor, // Sử dụng màu nút bấm cho Icon
@@ -86,37 +143,36 @@ class CustomNumpad extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              _buildButton('1', () => onKeyPress('1')),
-              _buildButton('2', () => onKeyPress('2')),
-              _buildButton('3', () => onKeyPress('3')),
+              _buildButton('1'),
+              _buildButton('2'),
+              _buildButton('3'),
             ],
           ),
           // Hàng 2: 4, 5, 6
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              _buildButton('4', () => onKeyPress('4')),
-              _buildButton('5', () => onKeyPress('5')),
-              _buildButton('6', () => onKeyPress('6')),
+              _buildButton('4'),
+              _buildButton('5'),
+              _buildButton('6'),
             ],
           ),
           // Hàng 3: 7, 8, 9
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              _buildButton('7', () => onKeyPress('7')),
-              _buildButton('8', () => onKeyPress('8')),
-              _buildButton('9', () => onKeyPress('9')),
+              _buildButton('7'),
+              _buildButton('8'),
+              _buildButton('9'),
             ],
           ),
           // Hàng 4: Phím đặc biệt, 0, Phím xoá
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              _buildButton('000', () => onKeyPress('000')),  
-              _buildButton('0', () => onKeyPress('0')),
-              // Phím xoá
-              _buildEraseButton(),
+              _buildButton(specialValue), // Phím thập phân/đặc biệt
+              _buildButton('0'),
+              _buildEraseButton(), // Phím xoá
             ],
           ),
         ],

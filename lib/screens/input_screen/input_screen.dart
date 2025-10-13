@@ -85,10 +85,12 @@ class _InputPageStateState extends State<InputScreen> {
           true, // Cho phép Bottom Sheet chiếm toàn bộ chiều rộng
       barrierColor: Colors.transparent,
       builder: (BuildContext context) {
+        const Color calculatedPressedColor = Colors.red;
         return CustomNumpad(
           onKeyPress: _handleKeyPress,
           onErasePress: _handleErasePress,
           buttonColor: Colors.indigo.shade400,
+          pressedColor: calculatedPressedColor,
           textColor: Colors.white,
           buttonSize: 70.0,
           fontSize: 28.0,
