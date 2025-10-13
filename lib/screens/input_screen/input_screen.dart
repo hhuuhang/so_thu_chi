@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart'
+    show StringTranslateExtension;
 import '../../models/transaction.dart';
 import '../../database/database_helper.dart';
 import 'package:intl/intl.dart';
 import '../../modules/numpad.dart';
+import '../../utils/number_utils.dart';
 
 class InputScreen extends StatefulWidget {
   const InputScreen({super.key});
@@ -13,20 +16,20 @@ class InputScreen extends StatefulWidget {
 
 class _InputPageStateState extends State<InputScreen> {
   final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _amountController = TextEditingController(text: '0');
+  final TextEditingController _amountController =
+      TextEditingController(text: '0');
   // String title = '';
   // double amount = 0.0;
   String type = 'income';
   DateTime date = DateTime.now();
 
-
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
-   // 1. FocusNode cho Số tiền (Kích hoạt Bottom Sheet)
+  // 1. FocusNode cho Số tiền (Kích hoạt Bottom Sheet)
   final FocusNode _amountFocusNode = FocusNode();
   // 2. FocusNode cho Mô tả (Kích hoạt bàn phím mặc định)
-  final FocusNode _titleFocusNode = FocusNode(); 
-  
+  final FocusNode _titleFocusNode = FocusNode();
+
   @override
   void initState() {
     super.initState();
@@ -63,22 +66,23 @@ class _InputPageStateState extends State<InputScreen> {
     }
   }
 
-   void _handleAmountFocusChange() {
+  void _handleAmountFocusChange() {
     // Chỉ xử lý khi Số tiền nhận focus
     if (_amountFocusNode.hasFocus) {
       // Ẩn bàn phím hệ thống (nếu nó đang hiện)
-      FocusManager.instance.primaryFocus?.unfocus(); 
-      
+      FocusManager.instance.primaryFocus?.unfocus();
+
       // Hiển thị Bottom Sheet chứa bàn phím custom
       _showCustomNumpadSheet();
     }
   }
 
-   void _showCustomNumpadSheet() {
+  void _showCustomNumpadSheet() {
     // Tự động đóng Bottom Sheet nếu màn hình bị dispose
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // Cho phép Bottom Sheet chiếm toàn bộ chiều rộng
+      isScrollControlled:
+          true, // Cho phép Bottom Sheet chiếm toàn bộ chiều rộng
       barrierColor: Colors.transparent,
       builder: (BuildContext context) {
         return CustomNumpad(
@@ -88,7 +92,6 @@ class _InputPageStateState extends State<InputScreen> {
           textColor: Colors.white,
           buttonSize: 70.0,
           fontSize: 28.0,
-          specialValue: '.',
         );
       },
       // Khi Bottom Sheet đóng, đảm bảo focus được xóa khỏi TextField Số tiền
@@ -100,10 +103,9 @@ class _InputPageStateState extends State<InputScreen> {
   }
 
   void _addTransaction() async {
-    // Get values from controllers
     String title = _titleController.text;
-    // Đảm bảo loại bỏ dấu phẩy/khoảng trắng trước khi parse nếu có
-    double amount = double.tryParse(_amountController.text) ?? 0.0;
+    // ⚠️ SỬ DỤNG HÀM TỪ UTILS ĐỂ LẤY GIÁ TRỊ DOUBLE SẠCH
+    double amount = parseToDouble(_amountController.text);
 
     if (title.isNotEmpty && amount > 0) {
       Transaction newTx = Transaction(
@@ -118,7 +120,7 @@ class _InputPageStateState extends State<InputScreen> {
       // Reset fields after adding transaction
       setState(() {
         _titleController.clear();
-        _amountController.clear();
+        _amountController.text = '0';
         type = 'income';
         date = DateTime.now();
       });
@@ -131,47 +133,54 @@ class _InputPageStateState extends State<InputScreen> {
     }
   }
 
-   // Hàm xử lý nhập phím (được truyền vào CustomNumpad)
+  // Hàm xử lý nhập phím (được truyền vào CustomNumpad)
   void _handleKeyPress(String value) {
-    // Logic cập nhật số tiền
-    String currentText = _amountController.text;
-    
-    // Ngăn chặn nhiều dấu chấm thập phân
-     
+    //Chuyển chuỗi định dạng hiện tại thành chuỗi thô
+    String rawText = removeFormat(_amountController.text);
+
+    //Logic cập nhật số tiền (trên chuỗi thô)
     if (value == '.') {
-      if (currentText.contains('.')) return; // Chỉ cho phép 1 dấu chấm
-      if (currentText.isEmpty || currentText == '0') currentText = '0';
+      if (rawText.contains('.')) return;
+      if (rawText.isEmpty) rawText = '0';
     }
-    
+
     setState(() {
-      if (currentText == '0' && value != '.') {
-        currentText = value;
+      if (rawText == '0' && value != '.') {
+        rawText = value;
       } else {
-        currentText += value;
+        rawText += value;
       }
-      _amountController.text = currentText;
+
+      //SỬ DỤNG HÀM TỪ UTILS: Định dạng lại chuỗi thô và gán vào controller
+      _amountController.text = formatAmount(rawText);
     });
-    
-    // Di chuyển con trỏ về cuối (để TextField luôn hiển thị số mới nhất)
+
+    //Di chuyển con trỏ về cuối
     _amountController.selection = TextSelection.fromPosition(
-      TextPosition(offset: _amountController.text.length)
-    );
+        TextPosition(offset: _amountController.text.length));
   }
 
   // Hàm xử lý xoá phím (được truyền vào CustomNumpad)
   void _handleErasePress() {
-    String currentText = _amountController.text;
+    // 1. Chuyển chuỗi định dạng hiện tại thành chuỗi thô
+    String rawText = removeFormat(_amountController.text);
+
     setState(() {
-      if (currentText.isNotEmpty) {
-        String newText = currentText.substring(0, currentText.length - 1);
-        _amountController.text = newText.isEmpty ? '0' : newText;
+      if (rawText.isNotEmpty) {
+        String newRawText = rawText.substring(0, rawText.length - 1);
+
+        if (newRawText.isEmpty) {
+          _amountController.text = '0';
+        } else {
+          // 2. SỬ DỤNG HÀM TỪ UTILS: Định dạng lại và gán vào controller
+          _amountController.text = formatAmount(newRawText);
+        }
       }
     });
-    
-    // Di chuyển con trỏ về cuối
+
+    // 3. Di chuyển con trỏ về cuối
     _amountController.selection = TextSelection.fromPosition(
-      TextPosition(offset: _amountController.text.length)
-    );
+        TextPosition(offset: _amountController.text.length));
   }
 
   void _deleteTransaction(int id) async {
@@ -184,67 +193,150 @@ class _InputPageStateState extends State<InputScreen> {
     }
   }
 
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: date,
+      firstDate: DateTime(1997),
+      lastDate: DateTime(2101),
+      helpText: 'Chọn Ngày Giao Dịch', // Tiêu đề của DatePicker
+      cancelText: 'Hủy',
+      confirmText: 'Xác nhận',
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Colors.green,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    // Nếu người dùng chọn một ngày (không nhấn hủy)
+    if (picked != null && picked != date) {
+      setState(() {
+        date = picked;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Đảm bảo ẩn bàn phím mặc định khi nhấn ra ngoài khu vực nhập
-     return GestureDetector(
+    return GestureDetector(
       onTap: () {
         // Đóng bàn phím mặc định/unfocus khi chạm ra ngoài
         FocusScope.of(context).unfocus();
       },
       child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          // Bao bọc bằng GestureDetector để cho phép bỏ focus khỏi Title nếu có
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Thêm Giao Dịch',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
+        padding: const EdgeInsets.all(16.0),
+        // Bọc bằng GestureDetector để cho phép bỏ focus khỏi Title
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Thêm Giao Dịch',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.green,
               ),
-              const SizedBox(height: 20),
-              
-              // 1. TextField Mô tả: Dùng bàn phím mặc định
+            ),
+            const SizedBox(height: 20),
             TextField(
               controller: _titleController,
               focusNode: _titleFocusNode, // Gắn FocusNode
               decoration: const InputDecoration(labelText: 'Mô tả'),
               keyboardType: TextInputType.text,
             ),
-              
-             // 2. TextField Số tiền: Kích hoạt Bottom Sheet (Không bàn phím mặc định)
             TextField(
               controller: _amountController,
-              focusNode: _amountFocusNode, 
+              focusNode: _amountFocusNode,
               decoration: const InputDecoration(labelText: 'Số tiền'),
-              // QUAN TRỌNG: Ngăn bàn phím mặc định hiện lên
-              readOnly: true, 
-              showCursor: true, 
+              //Ngăn bàn phím mặc định hiện lên
+              readOnly: true,
+              showCursor: true,
               textAlign: TextAlign.right,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-              
-              // ... (DropdownButton và TextButton giữ nguyên)
-              
-              // Thêm khoảng trống lớn để đảm bảo SingleChildScrollView hoạt động tốt
-              const SizedBox(height: 50),
-              
-              // Nút Thêm và Nút Test (giữ nguyên)
-              ElevatedButton(
-                onPressed: _addTransaction,
-                child: const Text('Thêm'),
+            const SizedBox(height: 20),
+            DropdownButtonFormField<String>(
+              initialValue: type, // Giá trị hiện tại
+              decoration: const InputDecoration(
+                labelText: 'Loại Giao Dịch',
+                border: OutlineInputBorder(),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 12, vertical: 15),
               ),
-              const SizedBox(height: 300), 
-              // Thêm nút test (nếu cần)
-                    
-            ],
-          ),
+              items: [
+                DropdownMenuItem(
+                  value: 'income',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.arrow_upward, color: Colors.green),
+                      const SizedBox(width: 8),
+                      Text("income".tr()),
+                    ],
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'expense',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.arrow_downward, color: Colors.red),
+                      const SizedBox(width: 8),
+                      Text("expense".tr()),
+                    ],
+                  ),
+                ),
+              ],
+              onChanged: (String? newValue) {
+                setState(() {
+                  type = newValue!; // Cập nhật biến trạng thái
+                });
+              },
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade400),
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  const Text('Ngày Giao Dịch:',
+                      style: TextStyle(fontSize: 16, color: Colors.black54)),
+                  TextButton.icon(
+                    onPressed: () => _selectDate(context), // Gọi hàm chọn ngày
+                    icon: const Icon(Icons.calendar_today, color: Colors.green),
+                    label: Text(
+                      DateFormat('dd/MM/yyyy').format(date),
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 50),
+            ElevatedButton(
+              onPressed: _addTransaction,
+              child: const Text('Thêm'),
+            ),
+            const SizedBox(height: 300),
+          ],
         ),
-      
+      ),
     );
   }
 }

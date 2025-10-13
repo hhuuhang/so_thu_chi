@@ -12,8 +12,8 @@ class CustomNumpad extends StatelessWidget {
   final double fontSize;
   
   // Tùy chọn: Widget cho phím đặc biệt (ví dụ: dấu chấm, enter)
-  final Widget? specialButton;
-  final String specialValue;
+  // final Widget? specialButton;
+  // final String specialValue;
 
   const CustomNumpad({
     super.key,
@@ -23,8 +23,8 @@ class CustomNumpad extends StatelessWidget {
     this.textColor = Colors.white,
     this.buttonSize = 80.0,
     this.fontSize = 30.0,
-    this.specialButton,
-    this.specialValue = '.', // Giá trị mặc định cho phím đặc biệt
+    // this.specialButton,
+    // this.specialValue = '.', // Giá trị mặc định cho phím đặc biệt
   });
 
   // Widget riêng để tạo một nút bấm số
@@ -113,15 +113,7 @@ class CustomNumpad extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              // Phím đặc biệt (ví dụ: dấu '.')
-              if (specialButton != null) 
-                InkWell(
-                  onTap: () => onKeyPress(specialValue),
-                  child: specialButton!,
-                )
-              else 
-                _buildButton(specialValue, () => onKeyPress(specialValue)),
-                
+              _buildButton('000', () => onKeyPress('000')),  
               _buildButton('0', () => onKeyPress('0')),
               // Phím xoá
               _buildEraseButton(),

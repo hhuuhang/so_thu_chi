@@ -75,7 +75,6 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentLocale = context.locale; 
     return Scaffold(
       appBar: AppBar(
         title: Center(child: Text("appTitle".tr())),
