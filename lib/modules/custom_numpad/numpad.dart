@@ -37,7 +37,8 @@ class _NumpadButtonState extends State<_NumpadButton> {
       width: widget.size,
       height: widget.size,
       margin: const EdgeInsets.all(8.0),
-      child: GestureDetector( // Sử dụng GestureDetector để bắt sự kiện chạm
+      // Sử dụng GestureDetector để bắt sự kiện chạm
+      child: GestureDetector(
         onTapDown: (_) => setState(() => _isPressed = true),
         onTapUp: (_) {
           setState(() => _isPressed = false);
@@ -45,8 +46,8 @@ class _NumpadButtonState extends State<_NumpadButton> {
         },
         onTapCancel: () => setState(() => _isPressed = false),
         onLongPressUp: () => setState(() => _isPressed = false),
-        
-        child: AnimatedContainer( // Dùng AnimatedContainer để chuyển màu mượt mà
+        // Dùng AnimatedContainer để chuyển màu mượt mà
+        child: AnimatedContainer(
           duration: const Duration(milliseconds: 100),
           alignment: Alignment.center,
           decoration: BoxDecoration(
@@ -84,7 +85,10 @@ class CustomNumpad extends StatelessWidget {
   final Color textColor;
   final double buttonSize;
   final double fontSize;
-  final String specialValue; //phím đặc biệt
+
+   // Tùy chọn: Widget cho phím đặc biệt (ví dụ: dấu chấm, enter)
+  // final Widget? specialButton;
+  // final String specialValue;
   
   //THÊM MÀU KHI NHẤN
   final Color pressedColor;
@@ -97,7 +101,7 @@ class CustomNumpad extends StatelessWidget {
     this.textColor = Colors.white,
     this.buttonSize = 80.0,
     this.fontSize = 30.0,
-    this.specialValue = '.',
+    // this.specialValue = '.',
     Color? pressedColor,
   }) : this.pressedColor = pressedColor ?? Colors.black54; // Gán màu nhấn tĩnh hoặc mặc định
 
@@ -166,15 +170,24 @@ class CustomNumpad extends StatelessWidget {
               _buildButton('9'),
             ],
           ),
-          // Hàng 4: Phím đặc biệt, 0, Phím xoá
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              _buildButton(specialValue), // Phím thập phân/đặc biệt
+              _buildButton('000'),  
               _buildButton('0'),
-              _buildEraseButton(), // Phím xoá
+              // Phím xoá
+              _buildEraseButton(),
             ],
           ),
+          // Hàng 4: Phím đặc biệt, 0, Phím xoá
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          //   children: <Widget>[
+          //     _buildButton(specialValue), // Phím thập phân
+          //     _buildButton('0'),
+          //     _buildEraseButton(), // Phím xoá
+          //   ],
+          // ),
         ],
       ),
     );

@@ -29,13 +29,37 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData darkTheme = ThemeData.dark().copyWith(
+      // Màu nền chung cho các màn hình
+      scaffoldBackgroundColor: Colors.grey.shade900, 
+      // Màu cho AppBar và các thanh công cụ khác
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.grey.shade900,
+        elevation: 0,
+        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 20),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      // Màu cho Bottom Navigation Bar
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: Colors.grey.shade800,
+        selectedItemColor: Colors.blue.shade300,
+        unselectedItemColor: Colors.grey.shade400,
+        type: BottomNavigationBarType.fixed,
+      ),
+      // Màu cho các thành phần khác
+      colorScheme: ColorScheme.dark(
+        primary: Colors.blue.shade300,
+        secondary: Colors.blue.shade300,
+      ),
+    );
+
     return MaterialApp(
       title: "So Thu Chi",
       debugShowCheckedModeBanner: false,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: darkTheme,
       home: const MainScreen(),
     );
   }
@@ -57,7 +81,6 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
-  // tạo widget theo index (tránh lỗi layout)
   Widget _getScreen(int index) {
     switch (index) {
       case 0:
@@ -76,9 +99,6 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Center(child: Text("appTitle".tr())),
-      ),
       body: _getScreen(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
@@ -101,7 +121,6 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
         onTap: _onItemTapped,
       ),
     );

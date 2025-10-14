@@ -4,9 +4,10 @@ import 'package:easy_localization/easy_localization.dart'
 import '../../models/transaction.dart';
 import '../../database/database_helper.dart';
 import 'package:intl/intl.dart';
-import '../../modules/numpad.dart';
+import '../../modules/custom_numpad/numpad.dart';
 import '../../utils/number_utils.dart';
 
+enum TransactionType {expense, income}
 class InputScreen extends StatefulWidget {
   const InputScreen({super.key});
 
@@ -15,26 +16,44 @@ class InputScreen extends StatefulWidget {
 }
 
 class _InputPageStateState extends State<InputScreen> {
+  
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _amountController =
       TextEditingController(text: '0');
-  // String title = '';
-  // double amount = 0.0;
-  String type = 'income';
+  
+  TransactionType _currentType = TransactionType.expense;
+  String _selectedCategory = 'Ăn uống';
   DateTime date = DateTime.now();
 
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
-  // 1. FocusNode cho Số tiền (Kích hoạt Bottom Sheet)
+  //FocusNode cho Số tiền (Kích hoạt Bottom Sheet)
   final FocusNode _amountFocusNode = FocusNode();
-  // 2. FocusNode cho Mô tả (Kích hoạt bàn phím mặc định)
+  //FocusNode cho Mô tả (Kích hoạt bàn phím mặc định)
   final FocusNode _titleFocusNode = FocusNode();
+
+  //Danh mục
+  final Map<String, IconData> expenseCategories = {
+    'Ăn uống': Icons.restaurant,
+    'Chi tiêu': Icons.clean_hands,
+    'Mua sắm': Icons.shopping_bag,
+    'Trả nợ': Icons.payments,
+    'Phí giao lưu': Icons.wine_bar,
+    'Y tế': Icons.medical_services,
+    'phát triển bản t...': Icons.lightbulb,
+    'Đầu tư': Icons.monetization_on,
+    'Đi lại': Icons.train,
+    'Giải trí': Icons.music_note,
+    'Xăng xe': Icons.local_gas_station,
+    'Tiền nhà': Icons.home,
+  };
+
 
   @override
   void initState() {
     super.initState();
     _loadTransactions();
-    // Lắng nghe focus cho "Số tiền"
+    //Lắng nghe focus cho "Số tiền"
     _amountFocusNode.addListener(_handleAmountFocusChange);
   }
 
@@ -47,6 +66,9 @@ class _InputPageStateState extends State<InputScreen> {
     _titleFocusNode.dispose();
     super.dispose();
   }
+
+  // Chuyển đổi enum sang string để lưu DB
+  String get _typeString => _currentType == TransactionType.income ? 'income' : 'expense';
 
   Future<void> _loadTransactions() async {
     List<Transaction> transactions = await _dbHelper.getTransactions();
@@ -81,22 +103,20 @@ class _InputPageStateState extends State<InputScreen> {
     // Tự động đóng Bottom Sheet nếu màn hình bị dispose
     showModalBottomSheet(
       context: context,
-      isScrollControlled:
-          true, // Cho phép Bottom Sheet chiếm toàn bộ chiều rộng
+      // Cho phép Bottom Sheet chiếm toàn bộ chiều rộng
+      isScrollControlled: true,
       barrierColor: Colors.transparent,
       builder: (BuildContext context) {
-        const Color calculatedPressedColor = Colors.red;
         return CustomNumpad(
           onKeyPress: _handleKeyPress,
           onErasePress: _handleErasePress,
           buttonColor: Colors.indigo.shade400,
-          pressedColor: calculatedPressedColor,
           textColor: Colors.white,
           buttonSize: 70.0,
           fontSize: 28.0,
         );
       },
-      // Khi Bottom Sheet đóng, đảm bảo focus được xóa khỏi TextField Số tiền
+      // Khi Bottom Sheet đóng, đảm bảo focus được xóa khỏi TextField
     ).whenComplete(() {
       if (_amountFocusNode.hasFocus) {
         _amountFocusNode.unfocus();
@@ -106,7 +126,7 @@ class _InputPageStateState extends State<InputScreen> {
 
   void _addTransaction() async {
     String title = _titleController.text;
-    // ⚠️ SỬ DỤNG HÀM TỪ UTILS ĐỂ LẤY GIÁ TRỊ DOUBLE SẠCH
+    // SỬ DỤNG HÀM TỪ UTILS ĐỂ LẤY GIÁ TRỊ DOUBLE SẠCH
     double amount = parseToDouble(_amountController.text);
 
     if (title.isNotEmpty && amount > 0) {
@@ -114,7 +134,7 @@ class _InputPageStateState extends State<InputScreen> {
         title: title,
         amount: amount,
         date: date,
-        type: type,
+        type: _typeString,
       );
       await _dbHelper.insertTransaction(newTx);
       _loadTransactions();
@@ -123,7 +143,8 @@ class _InputPageStateState extends State<InputScreen> {
       setState(() {
         _titleController.clear();
         _amountController.text = '0';
-        type = 'income';
+        _currentType = TransactionType.expense;
+        _selectedCategory = 'Ăn uống';
         date = DateTime.now();
       });
 
@@ -164,7 +185,7 @@ class _InputPageStateState extends State<InputScreen> {
 
   // Hàm xử lý xoá phím (được truyền vào CustomNumpad)
   void _handleErasePress() {
-    // 1. Chuyển chuỗi định dạng hiện tại thành chuỗi thô
+    //Chuyển chuỗi định dạng hiện tại thành chuỗi thô
     String rawText = removeFormat(_amountController.text);
 
     setState(() {
@@ -174,13 +195,13 @@ class _InputPageStateState extends State<InputScreen> {
         if (newRawText.isEmpty) {
           _amountController.text = '0';
         } else {
-          // 2. SỬ DỤNG HÀM TỪ UTILS: Định dạng lại và gán vào controller
+          //SỬ DỤNG HÀM TỪ UTILS: Định dạng lại và gán vào controller
           _amountController.text = formatAmount(newRawText);
         }
       }
     });
 
-    // 3. Di chuyển con trỏ về cuối
+    //Di chuyển con trỏ về cuối
     _amountController.selection = TextSelection.fromPosition(
         TextPosition(offset: _amountController.text.length));
   }
@@ -227,118 +248,230 @@ class _InputPageStateState extends State<InputScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
+   // Thêm hàm điều hướng ngày tháng
+  void _navigateDate(int days) {
+    setState(() {
+      date = date.add(Duration(days: days));
+    });
+  }
+
+  // --- WIDGET XÂY DỰNG GIAO DIỆN ---
+  
+  // Widget Tab Thu/Chi
+  Widget _buildTypeTab(TransactionType type, String label) {
+    bool isSelected = _currentType == type;
     return GestureDetector(
       onTap: () {
-        // Đóng bàn phím mặc định/unfocus khi chạm ra ngoài
-        FocusScope.of(context).unfocus();
+        setState(() {
+          _currentType = type;
+          _amountController.text = '0'; // Reset số tiền khi đổi loại
+        });
       },
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        // Bọc bằng GestureDetector để cho phép bỏ focus khỏi Title
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Thêm Giao Dịch',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.green,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: Colors.white),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.black : Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+   // Widget Danh mục
+  Widget _buildCategoryGrid() {
+    final Color primaryColor = _currentType == TransactionType.expense ? Colors.red : Colors.green;
+    final Color darkBackgroundColor = Colors.grey.shade900;
+    
+    return GridView.builder(
+      shrinkWrap: true, // Chiếm không gian cần thiết
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: expenseCategories.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        childAspectRatio: 1.2,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+      ),
+      itemBuilder: (context, index) {
+        String categoryName = expenseCategories.keys.elementAt(index);
+        IconData icon = expenseCategories.values.elementAt(index);
+        bool isSelected = _selectedCategory == categoryName;
+        
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              _selectedCategory = categoryName;
+            });
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: isSelected ? primaryColor.withAlpha((255 * 0.2).round()) : darkBackgroundColor,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isSelected ? primaryColor : Colors.grey.shade700,
+                width: isSelected ? 2.0 : 1.0,
               ),
             ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _titleController,
-              focusNode: _titleFocusNode, // Gắn FocusNode
-              decoration: const InputDecoration(labelText: 'Mô tả'),
-              keyboardType: TextInputType.text,
-            ),
-            TextField(
-              controller: _amountController,
-              focusNode: _amountFocusNode,
-              decoration: const InputDecoration(labelText: 'Số tiền'),
-              //Ngăn bàn phím mặc định hiện lên
-              readOnly: true,
-              showCursor: true,
-              textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            DropdownButtonFormField<String>(
-              initialValue: type, // Giá trị hiện tại
-              decoration: const InputDecoration(
-                labelText: 'Loại Giao Dịch',
-                border: OutlineInputBorder(),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12, vertical: 15),
-              ),
-              items: [
-                DropdownMenuItem(
-                  value: 'income',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.arrow_upward, color: Colors.green),
-                      const SizedBox(width: 8),
-                      Text("income".tr()),
-                    ],
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: 'expense',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.arrow_downward, color: Colors.red),
-                      const SizedBox(width: 8),
-                      Text("expense".tr()),
-                    ],
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: isSelected ? primaryColor : Colors.white, size: 28),
+                const SizedBox(height: 4),
+                Text(
+                  categoryName,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: isSelected ? primaryColor : Colors.white,
+                    fontSize: 12,
                   ),
                 ),
               ],
-              onChanged: (String? newValue) {
-                setState(() {
-                  type = newValue!; // Cập nhật biến trạng thái
-                });
-              },
             ),
-            const SizedBox(
-              height: 20,
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+     final bool isExpense = _currentType == TransactionType.expense;
+     final Color primaryColor = isExpense ? Colors.red : Colors.green;
+    return Scaffold(
+        appBar: AppBar(
+          toolbarHeight: 50,
+          automaticallyImplyLeading: false,
+          // ⚠️ TAB CHUYỂN ĐỔI THU/CHI
+          title: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white),
             ),
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade400),
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildTypeTab(TransactionType.expense, 'Tiền chi'),
+                _buildTypeTab(TransactionType.income, 'Tiền thu'),
+              ],
+            ),
+          ),
+          actions: [
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(Icons.edit, color: Colors.white),
+            ),
+          ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(40),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              // ⚠️ PHẦN CHỌN VÀ ĐIỀU HƯỚNG NGÀY THÁNG
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  const Text('Ngày Giao Dịch:',
-                      style: TextStyle(fontSize: 16, color: Colors.black54)),
-                  TextButton.icon(
-                    onPressed: () => _selectDate(context), // Gọi hàm chọn ngày
-                    icon: const Icon(Icons.calendar_today, color: Colors.green),
-                    label: Text(
-                      DateFormat('dd/MM/yyyy').format(date),
-                      style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black),
+                children: [
+                  const Text('Ngày', style: TextStyle(color: Colors.white, fontSize: 16)),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios, size: 16),
+                    color: Colors.white,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () => _navigateDate(-1),
+                  ),
+                  GestureDetector(
+                    onTap: () => _selectDate(context),
+                    child: Text(
+                      '${DateFormat('dd/MM/yyyy').format(date)} (${DateFormat('E', 'vi_VN').format(date)})',
+                      style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward_ios, size: 16),
+                    color: Colors.white,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () => _navigateDate(1),
+                  ),
+                  const SizedBox(width: 8), 
+                ],
+              ),
+            ),
+          ),
+        ),
+        
+        body: SingleChildScrollView( // Bọc toàn bộ body bằng SingleChildScrollView
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 10),
+              // TRƯỜNG GHI CHÚ
+              TextField(
+                controller: _titleController,
+                focusNode: _titleFocusNode,
+                decoration: const InputDecoration(
+                  labelText: 'Ghi chú', 
+                  hintText: 'Chưa nhập vào',
+                ),
+                keyboardType: TextInputType.text,
+              ),
+              const SizedBox(height: 10),
+
+              // TRƯỜNG SỐ TIỀN
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _amountController,
+                      focusNode: _amountFocusNode,
+                      decoration: InputDecoration(
+                        labelText: isExpense ? 'Tiền chi' : 'Tiền thu',
+                        labelStyle: const TextStyle(color: Colors.grey, fontSize: 18),
+                        suffixText: '₫',
+                        suffixStyle: TextStyle(color: primaryColor, fontSize: 18),
+                      ),
+                      readOnly: true, 
+                      showCursor: true, 
+                      textAlign: TextAlign.left,
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: primaryColor),
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 50),
-            ElevatedButton(
-              onPressed: _addTransaction,
-              child: const Text('Thêm'),
-            ),
-            const SizedBox(height: 300),
-          ],
+              const SizedBox(height: 20),
+              
+              // TIÊU ĐỀ DANH MỤC
+              const Text('Danh mục', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              
+              // PHẦN DANH MỤC (GRIDVIEW)
+              _buildCategoryGrid(),
+              
+              const SizedBox(height: 20),
+              
+              // Nút Hoàn thành/Lưu
+              Center(
+                child: TextButton(
+                  onPressed: _addTransaction,
+                  child: const Text('Hoàn thành', style: TextStyle(color: Colors.white, fontSize: 16)),
+                ),
+              ),
+              
+              // Khoảng trống đệm cuối cùng (quan trọng cho cuộn)
+              const SizedBox(height: 50),
+            ],
+          ),
         ),
-      ),
-    );
+      );
   }
 }
