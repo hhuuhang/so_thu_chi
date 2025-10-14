@@ -5,6 +5,8 @@ import 'screens/calendar_screen/calendar_screen.dart';
 import 'screens/input_screen/input_screen.dart';
 import 'screens/report_screen/report_screen.dart';
 import 'screens/setting_screen/setting_screen.dart';
+import 'package:provider/provider.dart';
+import 'screens/input_screen/input_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,8 +20,13 @@ void main() async {
       ],
       path: 'assets/translations',
       fallbackLocale: const Locale('vi'),
-      startLocale: const Locale('vi'), // ✅ mặc định Tiếng Việt
-      child: const MyApp(),
+      startLocale: const Locale('vi'), // mặc định Tiếng Việt
+      child:MultiProvider( // Bọc bằng MultiProvider
+        providers: [
+          ChangeNotifierProvider(create: (_) => InputController()),
+        ],
+        child: const MyApp(),
+      ),
     ),
   );
 }

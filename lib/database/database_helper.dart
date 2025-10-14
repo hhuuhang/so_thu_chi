@@ -16,7 +16,7 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'expense_tracker.db');
+    String path = join(await getDatabasesPath(), 'money_tracker.db');
     return await openDatabase(
       path,
       version: 1,
@@ -31,7 +31,8 @@ class DatabaseHelper {
         title TEXT,
         amount REAL,
         date TEXT,
-        type TEXT
+        type TEXT,
+        category TEXT
       )
     ''');
   }
@@ -53,4 +54,5 @@ class DatabaseHelper {
     Database db = await database;
     return await db.delete('transactions', where: 'id = ?', whereArgs: [id]);
   }
+  
 }

@@ -15,6 +15,9 @@ class ReportController extends ChangeNotifier {
   double _expense = 0.0;
   Map<String, Map<String, double>> _chartData = {};
 
+  Map<String, double> _expenseByCategory = {};
+  Map<String, double> _incomeByCategory = {};
+
   // # GETTERS: Cung cấp quyền truy cập chỉ đọc (read-only) từ bên ngoài
   List<Transaction> get transactions => _transactions;
   double get balance => _balance;
@@ -22,6 +25,10 @@ class ReportController extends ChangeNotifier {
   double get expense => _expense;
   Map<String, Map<String, double>> get chartData => _chartData;
   bool get isLoading => _isLoading;
+
+  // ⚠️ GETTER MỚI CHO BÁO CÁO DANH MỤC
+  Map<String, double> get expenseByCategory => _expenseByCategory;
+  Map<String, double> get incomeByCategory => _incomeByCategory;
 
   // # HÀM XỬ LÝ LOGIC
 
@@ -34,26 +41,39 @@ class ReportController extends ChangeNotifier {
     _isLoading = true;
     notifyListeners(); // Báo cho UI biết đang tải để hiển thị loading
 
-    // 2. Thực hiện tải dữ liệu và tính toán
-    List<Transaction> transactions = await _getTransactions(
-      startDate: startDate,
-      endDate: endDate,
-    );
-    double newIncome = _getIncome(transactions);
-    double newExpense = _getExpense(transactions);
-    Map<String, Map<String, double>> newChartData =
-        _buildChartData(transactions);
+    try {
+        // 2. Thực hiện tải dữ liệu và tính toán
+        List<Transaction> transactions = await _getTransactions(
+          startDate: startDate,
+          endDate: endDate,
+        );
+        double newIncome = _getIncome(transactions);
+        double newExpense = _getExpense(transactions);
+        Map<String, Map<String, double>> newChartData =
+            _buildChartData(transactions);
 
-    // 3. Cập nhật trạng thái
-    _transactions = transactions;
-    _income = newIncome;
-    _expense = newExpense;
-    _balance = newIncome - newExpense;
-    _chartData = newChartData;
+        // ⚠️ GỌI HÀM TÍNH TOÁN THEO DANH MỤC
+        Map<String, double> newExpenseByCategory = _buildCategoryReport(transactions, 'expense');
+        Map<String, double> newIncomeByCategory = _buildCategoryReport(transactions, 'income');
 
-    // 4. Đặt trạng thái tải xong
-    _isLoading = false;
-    notifyListeners(); // Báo cho UI biết đã tải xong, hiển thị dữ liệu
+        // 3. Cập nhật trạng thái
+        _transactions = transactions;
+        _income = newIncome;
+        _expense = newExpense;
+        _balance = newIncome - newExpense;
+        _chartData = newChartData;
+        _expenseByCategory = newExpenseByCategory;
+        _incomeByCategory = newIncomeByCategory;
+
+    } catch (e) {
+        // ⚠️ Xử lý lỗi: Nếu xảy ra lỗi DB (ví dụ: thiếu cột 'category' do chưa migrate)
+        // Lỗi sẽ bị bắt ở đây và _isLoading vẫn được đặt thành false
+        print("Lỗi khi tải giao dịch trong ReportController: $e");
+    } finally {
+        // 4. Đặt trạng thái tải xong DÙ CÓ LỖI HAY KHÔNG
+        _isLoading = false;
+        notifyListeners(); // Báo cho UI biết đã tải xong (hoặc thất bại)
+    }
   }
 
   // Hàm xóa giao dịch và tải lại dữ liệu
@@ -109,4 +129,29 @@ class ReportController extends ChangeNotifier {
     }
     return chartData;
   }
+  // ⚠️ HÀM HỖ TRỢ MỚI: TÍNH TOÁN TỔNG SỐ TIỀN THEO DANH MỤC
+  Map<String, double> _buildCategoryReport(
+      List<Transaction> transactions, String type) {
+    
+    // 1. Lọc giao dịch theo loại (income/expense)
+    final filteredTransactions = transactions.where((tx) => tx.type == type);
+    
+    // 2. Nhóm và tính tổng
+    Map<String, double> categoryTotals = {};
+    for (var tx in filteredTransactions) {
+      // Dùng tx.category vì bạn đã thêm nó vào model
+      String category = tx.category; 
+      
+      categoryTotals.update(
+        category, 
+        (value) => value + tx.amount, 
+        ifAbsent: () => tx.amount, // Nếu category chưa có, gán amount lần đầu
+      );
+    }
+    
+    return categoryTotals;
+  }
+
 }
+
+
