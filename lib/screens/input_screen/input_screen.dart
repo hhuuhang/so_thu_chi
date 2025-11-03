@@ -1,13 +1,12 @@
 // screens/input_screen/input_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // ⚠️ Thêm Provider
+import 'package:provider/provider.dart'; // Thêm Provider
 import 'package:intl/intl.dart';
-import 'package:easy_localization/easy_localization.dart' show StringTranslateExtension;
 
 import '../../constants.dart' show TransactionType;
 import '../../modules/custom_numpad/numpad.dart';
-import 'input_controller.dart'; // ⚠️ Import Controller
+import 'input_controller.dart'; // Import Controller
 
 class InputScreen extends StatelessWidget {
   const InputScreen({super.key});
@@ -32,8 +31,8 @@ class InputScreen extends StatelessWidget {
       barrierColor: Colors.transparent,
       builder: (BuildContext context) {
         return CustomNumpad(
-          onKeyPress: controller.handleKeyPress, // ⚠️ Gọi hàm từ Controller
-          onErasePress: controller.handleErasePress, // ⚠️ Gọi hàm từ Controller
+          onKeyPress: controller.handleKeyPress, // Gọi hàm từ Controller
+          onErasePress: controller.handleErasePress, // Gọi hàm từ Controller
           buttonColor: baseColor,
           pressedColor: calculatedPressedColor,
           textColor: Colors.white,
@@ -51,7 +50,7 @@ class InputScreen extends StatelessWidget {
   Widget _buildTypeTab(BuildContext context, InputController controller, TransactionType type, String label) {
     bool isSelected = controller.currentType == type;
     return GestureDetector(
-      onTap: () => controller.setCurrentType(type), // ⚠️ Gọi setter từ Controller
+      onTap: () => controller.setCurrentType(type), // Gọi setter từ Controller
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: BoxDecoration(
@@ -72,7 +71,7 @@ class InputScreen extends StatelessWidget {
 
   // Widget Danh mục
   Widget _buildCategoryGrid(BuildContext context, InputController controller) {
-    final Map<String, IconData> categories = controller.currentCategories; // ⚠️ Lấy categories từ Controller
+    final Map<String, IconData> categories = controller.currentCategories; // Lấy categories từ Controller
     final Color primaryColor = controller.currentType == TransactionType.expense ? Colors.red : Colors.green;
     final Color darkBackgroundColor = Colors.grey.shade900;
     
@@ -95,10 +94,10 @@ class InputScreen extends StatelessWidget {
           String categoryName = categories.keys.elementAt(index);
           IconData icon = categories.values.elementAt(index);
           
-          bool isSelected = controller.selectedCategory == categoryName; // ⚠️ So sánh với state trong Controller
+          bool isSelected = controller.selectedCategory == categoryName; // So sánh với state trong Controller
           
           return GestureDetector(
-            onTap: () => controller.setSelectedCategory(categoryName), // ⚠️ Gọi hàm từ Controller
+            onTap: () => controller.setSelectedCategory(categoryName), // Gọi hàm từ Controller
             child: Container(
               decoration: BoxDecoration(
                 color: isSelected ? primaryColor.withAlpha((255 * 0.2).round()) : darkBackgroundColor,
@@ -123,7 +122,7 @@ class InputScreen extends StatelessWidget {
                     ),
                   ),
                 ],
-              ),
+              )
             ),
           );
         },
@@ -133,7 +132,7 @@ class InputScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ⚠️ SỬ DỤNG Consumer ĐỂ LẮNG NGHE VÀ TRUY CẬP LOGIC
+    // SỬ DỤNG Consumer ĐỂ LẮNG NGHE VÀ TRUY CẬP LOGIC
     return Consumer<InputController>(
       builder: (context, controller, child) {
         final bool isExpense = controller.currentType == TransactionType.expense;
@@ -149,7 +148,7 @@ class InputScreen extends StatelessWidget {
           }
         });
 
-        // Áp dụng Dark Theme cục bộ (như cũ)
+        // Áp dụng Dark Theme cục bộ
         return Theme(
           data: ThemeData.dark().copyWith(
             scaffoldBackgroundColor: Colors.grey.shade900,
@@ -168,19 +167,22 @@ class InputScreen extends StatelessWidget {
           ),
           child: Scaffold(
             appBar: AppBar(
-              toolbarHeight: 50,
+              toolbarHeight: 60,
               automaticallyImplyLeading: false,
               title: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white),
+                  // border: Border.all(color: Colors.white),
                 ),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildTypeTab(context, controller, TransactionType.expense, 'Tiền chi'),
-                    _buildTypeTab(context, controller, TransactionType.income, 'Tiền thu'),
+                    Expanded(
+                      child: _buildTypeTab(context, controller, TransactionType.expense, 'Tiền chi')),
+                      const SizedBox(width: 10,),
+                    Expanded(
+                      child: _buildTypeTab(context, controller, TransactionType.income, 'Tiền thu')),
                   ],
                 ),
               ),
@@ -201,10 +203,10 @@ class InputScreen extends StatelessWidget {
                         color: Colors.white,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
-                        onPressed: () => controller.navigateDate(-1), // ⚠️ Gọi Controller
+                        onPressed: () => controller.navigateDate(-1), // Gọi Controller
                       ),
                       GestureDetector(
-                        onTap: () => controller.selectDate(context), // ⚠️ Gọi Controller
+                        onTap: () => controller.selectDate(context), // Gọi Controller
                         child: Text(
                           // ⚠️ Lấy date từ Controller
                           '${DateFormat('dd/MM/yyyy').format(controller.date)} (${DateFormat('E', 'vi_VN').format(controller.date)})',
@@ -216,7 +218,7 @@ class InputScreen extends StatelessWidget {
                         color: Colors.white,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
-                        onPressed: () => controller.navigateDate(1), // ⚠️ Gọi Controller
+                        onPressed: () => controller.navigateDate(1), // Gọi Controller
                       ),
                       const SizedBox(width: 8), 
                     ],
@@ -235,7 +237,7 @@ class InputScreen extends StatelessWidget {
                   
                   // TRƯỜNG GHI CHÚ
                   TextField(
-                    controller: controller.titleController, // ⚠️ Dùng Controller
+                    controller: controller.titleController, // Dùng Controller
                     decoration: const InputDecoration(labelText: 'Ghi chú', hintText: 'Chưa nhập vào'),
                     keyboardType: TextInputType.text,
                   ),
@@ -246,8 +248,8 @@ class InputScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: TextField(
-                          controller: controller.amountController, // ⚠️ Dùng Controller
-                          focusNode: amountFocusNode, // ⚠️ Dùng FocusNode cục bộ
+                          controller: controller.amountController, // Dùng Controller
+                          focusNode: amountFocusNode, // Dùng FocusNode cục bộ
                           decoration: InputDecoration(
                             labelText: isExpense ? 'Tiền chi' : 'Tiền thu',
                             labelStyle: const TextStyle(color: Colors.grey, fontSize: 18),
@@ -268,14 +270,14 @@ class InputScreen extends StatelessWidget {
                   const SizedBox(height: 10),
                   
                   // PHẦN DANH MỤC (GRIDVIEW)
-                  _buildCategoryGrid(context, controller), // ⚠️ Truyền Controller
+                  _buildCategoryGrid(context, controller), // Truyền Controller
                   
                   const SizedBox(height: 20),
                   
                   // Nút Hoàn thành/Lưu
                   Center(
                     child: TextButton(
-                      onPressed: () => controller.addTransaction(context), // ⚠️ Gọi hàm từ Controller
+                      onPressed: () => controller.addTransaction(context), // Gọi hàm từ Controller
                       child: const Text('Hoàn thành', style: TextStyle(color: Colors.white, fontSize: 16)),
                     ),
                   ),

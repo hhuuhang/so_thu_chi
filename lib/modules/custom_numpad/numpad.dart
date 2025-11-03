@@ -103,7 +103,7 @@ class CustomNumpad extends StatelessWidget {
     this.fontSize = 30.0,
     // this.specialValue = '.',
     Color? pressedColor,
-  }) : this.pressedColor = pressedColor ?? Colors.black54; // Gán màu nhấn tĩnh hoặc mặc định
+  }) : pressedColor = pressedColor ?? Colors.black54; // Gán màu nhấn tĩnh hoặc mặc định
 
   // Widget riêng để tạo một nút bấm số/đặc biệt
   Widget _buildButton(String value) {
