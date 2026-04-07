@@ -9,7 +9,7 @@ class _NumpadButton extends StatefulWidget {
   final double size;
   final double fontSize;
   final Color buttonColor;
-  final Color pressedColor; 
+  final Color pressedColor;
   final Color textColor;
 
   const _NumpadButton({
@@ -86,10 +86,10 @@ class CustomNumpad extends StatelessWidget {
   final double buttonSize;
   final double fontSize;
 
-   // Tùy chọn: Widget cho phím đặc biệt (ví dụ: dấu chấm, enter)
+  // Tùy chọn: Widget cho phím đặc biệt (ví dụ: dấu chấm, enter)
   // final Widget? specialButton;
   // final String specialValue;
-  
+
   //THÊM MÀU KHI NHẤN
   final Color pressedColor;
 
@@ -103,7 +103,8 @@ class CustomNumpad extends StatelessWidget {
     this.fontSize = 30.0,
     // this.specialValue = '.',
     Color? pressedColor,
-  }) : pressedColor = pressedColor ?? Colors.black54; // Gán màu nhấn tĩnh hoặc mặc định
+  }) : pressedColor =
+            pressedColor ?? Colors.black54; // Gán màu nhấn tĩnh hoặc mặc định
 
   // Widget riêng để tạo một nút bấm số/đặc biệt
   Widget _buildButton(String value) {
@@ -124,7 +125,8 @@ class CustomNumpad extends StatelessWidget {
       width: buttonSize,
       height: buttonSize,
       margin: const EdgeInsets.all(8.0),
-      child: InkWell( // Sử dụng InkWell vì nó đã có hiệu ứng nhấn tích hợp
+      child: InkWell(
+        // Sử dụng InkWell vì nó đã có hiệu ứng nhấn tích hợp
         onTap: onErasePress,
         borderRadius: BorderRadius.circular(buttonSize / 2),
         child: Icon(
@@ -173,7 +175,7 @@ class CustomNumpad extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              _buildButton('000'),  
+              _buildButton('000'),
               _buildButton('0'),
               // Phím xoá
               _buildEraseButton(),

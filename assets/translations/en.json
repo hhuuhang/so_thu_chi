@@ -12,6 +12,11 @@
   "noTransactions": "No transactions yet.",
   "transactionDeleted": "Transaction deleted successfully.",
   "chartTitle": "7-day Income & Expense Chart",
+  "reportTitle": "Report",
+  "noDataForCategory": "No data for this category.",
+  "Expense by Category": "Expense by Category",
+  "Income by Category": "Income by Category",
+  "History": "History",
   "selectLanguage": "Select Language",
   "hello": "Hello"
 }

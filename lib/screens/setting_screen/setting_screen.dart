@@ -8,6 +8,7 @@ class SettingsScreen extends StatefulWidget {
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
+
 class _SettingsScreenState extends State<SettingsScreen> {
   String? _selectedLang;
 
@@ -24,31 +25,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _changeLanguage(String langCode) async {
-        final newLocale = Locale(langCode);
+    final newLocale = Locale(langCode);
 
-        if (!mounted) return;
+    if (!mounted) return;
 
-        // 1. Thay đổi ngôn ngữ toàn cục.
-        // Dòng này khiến toàn bộ app UI được rebuild ngay lập tức.
-        await context.setLocale(newLocale); 
+    // 1. Thay đổi ngôn ngữ toàn cục.
+    // Dòng này khiến toàn bộ app UI được rebuild ngay lập tức.
+    await context.setLocale(newLocale);
 
-        // 2. Cập nhật trạng thái Dropdown cục bộ
-        if (mounted) {
-            setState(() {
-                _selectedLang = langCode; 
-            });
-        }
-        
-        // 3. Lưu SharedPreferences sau cùng
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('langCode', langCode);
+    // 2. Cập nhật trạng thái Dropdown cục bộ
+    if (mounted) {
+      setState(() {
+        _selectedLang = langCode;
+      });
     }
+
+    // 3. Lưu SharedPreferences sau cùng
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('langCode', langCode);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("settings".tr()), 
+        title: Text("settings".tr()),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

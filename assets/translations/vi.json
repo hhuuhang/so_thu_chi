@@ -8,10 +8,15 @@
   "balance": "Số dư hiện tại",
   "income": "Thu",
   "expense": "Chi",
-  "transactionHistory": "Lịch sử Giao dịch",
+  "transactionHistory": "Lịch sử giao dịch",
   "noTransactions": "Chưa có giao dịch nào.",
   "transactionDeleted": "Đã xóa giao dịch thành công.",
-  "chartTitle": "Biểu đồ Thu Chi 7 ngày",
-  "selectLanguage": "Chọn Ngôn ngữ",
+  "chartTitle": "Biểu đồ thu chi 7 ngày",
+  "reportTitle": "Báo cáo",
+  "noDataForCategory": "Chưa có dữ liệu cho danh mục này.",
+  "Expense by Category": "Chi theo danh mục",
+  "Income by Category": "Thu theo danh mục",
+  "History": "Lịch sử",
+  "selectLanguage": "Chọn ngôn ngữ",
   "hello": "Xin chào"
 }

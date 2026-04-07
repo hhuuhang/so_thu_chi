@@ -8,11 +8,11 @@ final NumberFormat _numberFormatter = NumberFormat.decimalPattern('vi_VN');
 String formatAmount(String rawAmount) {
   // 1. Loại bỏ tất cả các dấu phân cách cũ (dấu chấm)
   String cleanString = rawAmount.replaceAll('.', '');
-  
+
   // 2. Tách phần nguyên và phần thập phân (sử dụng dấu chấm '.' cho thập phân)
   String integerPart = cleanString;
   String decimalPart = '';
-  
+
   if (cleanString.contains('.')) {
     List<String> parts = cleanString.split('.');
     integerPart = parts[0];
@@ -21,9 +21,9 @@ String formatAmount(String rawAmount) {
 
   // 3. Chuyển phần nguyên sang số để định dạng
   int? value = int.tryParse(integerPart);
-  
-  if (value == null) return rawAmount; 
-  
+
+  if (value == null) return rawAmount;
+
   // 4. Định dạng phần nguyên (ví dụ: 1000000 -> 1.000.000)
   String formattedInteger = _numberFormatter.format(value);
 
@@ -31,7 +31,7 @@ String formatAmount(String rawAmount) {
   if (rawAmount.contains('.')) {
     return '$formattedInteger.$decimalPart';
   }
-  
+
   return formattedInteger;
 }
 
@@ -43,6 +43,7 @@ String removeFormat(String formattedAmount) {
 
 // Hàm này dùng để lấy giá trị double sạch sẽ để tính toán hoặc lưu DB
 double parseToDouble(String formattedAmount) {
-  String cleanString = formattedAmount.replaceAll('.', ''); // Xóa dấu phân cách nghìn
+  String cleanString =
+      formattedAmount.replaceAll('.', ''); // Xóa dấu phân cách nghìn
   return double.tryParse(cleanString) ?? 0.0;
 }
