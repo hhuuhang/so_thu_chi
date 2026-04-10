@@ -291,18 +291,18 @@ class InputScreen extends StatelessWidget {
                   const SizedBox(height: 20),
                   Center(
                     child: ElevatedButton(
-                      style: ButtonStyle(backgroundColor: WidgetStateProperty.resolveWith((states){
-                        if (states.contains(WidgetState.pressed)) {
-                          return Colors.red;
-                        }
-                        return Colors.blue;
-                          },
-                        ),
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStateProperty.resolveWith((states) {
+                          if (states.contains(WidgetState.pressed)) {
+                            return Colors.green;
+                          }
+                          return Colors.white;
+                        }),
                       ),
                       onPressed: () => controller.addTransaction(context),
                       child: const Text(
                         'Hoàn thành',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
+                        style: TextStyle(color: Colors.black, fontSize: 16),
                       ),
                     ),
                   ),
