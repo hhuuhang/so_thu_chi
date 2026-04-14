@@ -15,7 +15,7 @@ class InputScreen extends StatelessWidget {
         ? Colors.red.shade400
         : Colors.green.shade400;
     final pressedColor =
-        Color.alphaBlend(Colors.black.withValues(alpha: 0.08), baseColor);
+        Color.alphaBlend(Colors.black.withOpacity(0.08), baseColor);
 
     showModalBottomSheet<void>(
       context: context,
@@ -69,7 +69,7 @@ class InputScreen extends StatelessWidget {
         : Colors.green;
     final darkBackgroundColor = Colors.grey.shade900;
     final rowCount = (categories.length / 3).ceil();
-    final gridHeight = rowCount * 1.2 * 100;
+    final gridHeight = rowCount * 1.1 * 100;
 
     return SizedBox(
       height: gridHeight,
@@ -93,7 +93,7 @@ class InputScreen extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 color: isSelected
-                    ? primaryColor.withValues(alpha: 0.2)
+                    ? primaryColor.withOpacity(0.2)
                     : darkBackgroundColor,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
@@ -292,7 +292,8 @@ class InputScreen extends StatelessWidget {
                   Center(
                     child: ElevatedButton(
                       style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.resolveWith((states) {
+                        backgroundColor:
+                            WidgetStateProperty.resolveWith((states) {
                           if (states.contains(WidgetState.pressed)) {
                             return Colors.green;
                           }

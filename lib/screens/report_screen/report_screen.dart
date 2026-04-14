@@ -2,233 +2,643 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../category_catalog.dart';
+import '../../models/transaction.dart';
 import 'report_controller.dart';
 
 class ReportScreen extends StatefulWidget {
-  const ReportScreen({super.key});
+  const ReportScreen({
+    super.key,
+    this.controller,
+  });
+
+  final ReportController? controller;
 
   @override
   State<ReportScreen> createState() => _ReportScreenState();
 }
 
 class _ReportScreenState extends State<ReportScreen> {
-  final ReportController _controller = ReportController();
+  late final ReportController _controller;
+  late final bool _ownsController;
+  int _touchedSectionIndex = -1;
+
+  static const List<Color> _expensePalette = <Color>[
+    Color(0xFFFF5A4E),
+    Color(0xFFFF7A45),
+    Color(0xFFFFC24B),
+    Color(0xFFD26DFF),
+    Color(0xFF2D5BFF),
+    Color(0xFF4FC3F7),
+    Color(0xFFE1BEE7),
+    Color(0xFF81C784),
+    Color(0xFFFFA726),
+    Color(0xFFFF7043),
+    Color(0xFFEF5350),
+    Color(0xFFFFD54F),
+  ];
+
+  static const List<Color> _incomePalette = <Color>[
+    Color(0xFF64B5F6),
+    Color(0xFF4DD0E1),
+    Color(0xFF81C784),
+    Color(0xFFFFD54F),
+    Color(0xFFBA68C8),
+  ];
 
   @override
   void initState() {
     super.initState();
-    final endDate = DateTime.now();
-    final startDate = endDate.subtract(const Duration(days: 6));
-    _controller.loadTransactions(startDate: startDate, endDate: endDate);
+    _controller = widget.controller ?? ReportController();
+    _ownsController = widget.controller == null;
+    _controller.loadTransactions();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    if (_ownsController) {
+      _controller.dispose();
+    }
     super.dispose();
   }
 
-  String _formatAmount(double amount, BuildContext context) {
+  String _formatAmount(BuildContext context, double amount) {
     final locale = Localizations.localeOf(context).toString();
-    return NumberFormat.currency(
-      locale: locale,
-      symbol: '₫',
-      decimalDigits: 0,
-    ).format(amount);
+    final formatter = NumberFormat.decimalPattern(locale);
+    return '${formatter.format(amount.abs().round())}đ';
   }
 
-  String _formatDate(DateTime date) => DateFormat('dd/MM/yyyy').format(date);
+  String _formatSignedAmount(
+    BuildContext context,
+    double amount, {
+    bool alwaysShowSign = false,
+  }) {
+    final sign = amount < 0
+        ? '-'
+        : amount > 0
+            ? '+'
+            : alwaysShowSign
+                ? '+'
+                : '';
+    return '$sign${_formatAmount(context, amount)}';
+  }
 
-  Widget _buildBarChart(BuildContext context) {
-    final barGroups = <BarChartGroupData>[];
-    final dateKeys = _controller.chartData.keys.toList()
-      ..sort(
-        (a, b) => DateFormat('dd/MM/yyyy')
-            .parse(a)
-            .compareTo(DateFormat('dd/MM/yyyy').parse(b)),
-      );
+  List<Color> _paletteForType(ReportCategoryType type) {
+    return type == ReportCategoryType.expense
+        ? _expensePalette
+        : _incomePalette;
+  }
 
-    for (var i = 0; i < dateKeys.length && i < 7; i++) {
-      final date = dateKeys[i];
-      final income = _controller.chartData[date]!['income']!;
-      final expense = _controller.chartData[date]!['expense']!;
+  Color _colorForBreakdownItem(int index, ReportCategoryType type) {
+    final palette = _paletteForType(type);
+    return palette[index % palette.length];
+  }
 
-      barGroups.add(
-        BarChartGroupData(
-          x: i,
-          barRods: [
-            BarChartRodData(toY: income, color: Colors.green, width: 8),
-            BarChartRodData(toY: expense, color: Colors.red, width: 8),
+  String _truncateCategoryLabel(String value) {
+    if (value.length <= 10) {
+      return value;
+    }
+
+    return '${value.substring(0, 9)}…';
+  }
+
+  String _transactionTitle(Transaction transaction) {
+    final trimmedTitle = transaction.title.trim();
+    return trimmedTitle.isEmpty ? transaction.category : trimmedTitle;
+  }
+
+  Future<void> _handleSearchPressed() async {
+    final appliedQuery = await showSearch<String?>(
+      context: context,
+      delegate: _ReportSearchDelegate(
+        initialQuery: _controller.searchQuery,
+        categories: _controller.searchableBreakdown,
+        formatAmount: (amount) => _formatAmount(context, amount),
+      ),
+    );
+
+    if (!mounted || appliedQuery == null) {
+      return;
+    }
+
+    _controller.setSearchQuery(appliedQuery);
+  }
+
+  Future<void> _showCategoryDetails(
+    CategoryBreakdown item,
+    Color accentColor,
+  ) async {
+    final locale = Localizations.localeOf(context).toString();
+    final dateFormatter = DateFormat('dd/MM/yyyy • HH:mm', locale);
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.74,
+          minChildSize: 0.5,
+          maxChildSize: 0.92,
+          expand: false,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.grey.shade900,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(28),
+                ),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.08),
+                ),
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 42,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.16),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 46,
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: accentColor.withOpacity(0.16),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Icon(
+                            iconForCategory(item.name, item.type),
+                            color: accentColor,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.name,
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${item.transactions.length} ${'reportTransactionsLabel'.tr()}',
+                                style: TextStyle(
+                                  color: Colors.grey.shade400,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text(
+                          _formatSignedAmount(
+                            context,
+                            item.type == 'expense' ? -item.amount : item.amount,
+                            alwaysShowSign: item.type == 'income',
+                          ),
+                          style: TextStyle(
+                            color: item.type == 'income'
+                                ? Colors.lightBlue.shade300
+                                : Colors.red.shade400,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.separated(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                      itemCount: item.transactions.length,
+                      separatorBuilder: (_, __) => Divider(
+                        color: Colors.white.withOpacity(0.08),
+                        height: 1,
+                      ),
+                      itemBuilder: (context, index) {
+                        final transaction = item.transactions[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _transactionTitle(transaction),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      dateFormatter.format(transaction.date),
+                                      style: TextStyle(
+                                        color: Colors.grey.shade400,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                _formatSignedAmount(
+                                  context,
+                                  item.type == 'expense'
+                                      ? -transaction.amount
+                                      : transaction.amount,
+                                  alwaysShowSign: item.type == 'income',
+                                ),
+                                style: TextStyle(
+                                  color: item.type == 'income'
+                                      ? Colors.lightBlue.shade300
+                                      : Colors.red.shade400,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildTopToolbar() {
+    return Row(
+      children: [
+        const SizedBox(width: 44, height: 44),
+        Expanded(
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.42),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _ReportModeChip(
+                      label: 'reportMonthly'.tr(),
+                      isSelected:
+                          _controller.rangeMode == ReportRangeMode.monthly,
+                      onTap: () => _controller.setRangeMode(
+                        ReportRangeMode.monthly,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: _ReportModeChip(
+                      label: 'reportYearly'.tr(),
+                      isSelected: _controller.rangeMode == ReportRangeMode.yearly,
+                      onTap: () => _controller.setRangeMode(
+                        ReportRangeMode.yearly,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        IconButton(
+          tooltip: 'reportSearch'.tr(),
+          onPressed: _handleSearchPressed,
+          icon: const Icon(
+            Icons.search_rounded,
+            size: 38,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPeriodNavigator() {
+    return Row(
+      children: [
+        IconButton(
+          onPressed: () => _controller.shiftPeriod(-1),
+          icon: const Icon(Icons.chevron_left_rounded, size: 34),
+        ),
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade800,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Center(
+              child: Wrap(
+                spacing: 10,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                alignment: WrapAlignment.center,
+                children: [
+                  Text(
+                    _controller.periodTitle,
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
+                    '(${_controller.periodRangeLabel})',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade300,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        IconButton(
+          onPressed: () => _controller.shiftPeriod(1),
+          icon: const Icon(Icons.chevron_right_rounded, size: 34),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSummaryCards() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _SummaryCard(
+                label: 'reportExpense'.tr(),
+                value: _formatSignedAmount(context, -_controller.expense),
+                valueColor: Colors.red.shade400,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _SummaryCard(
+                label: 'reportIncome'.tr(),
+                value: _formatSignedAmount(
+                  context,
+                  _controller.income,
+                  alwaysShowSign: true,
+                ),
+                valueColor: Colors.lightBlue.shade300,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        _SummaryCard(
+          label: 'reportNet'.tr(),
+          value: _formatSignedAmount(context, _controller.balance),
+          valueColor: Colors.white,
+          isFullWidth: true,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBreakdownSwitch() {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Colors.white.withOpacity(0.14)),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _BreakdownTab(
+              label: 'reportExpense'.tr(),
+              isSelected: _controller.activeType == ReportCategoryType.expense,
+              onTap: () {
+                setState(() {
+                  _touchedSectionIndex = -1;
+                });
+                _controller.setActiveType(ReportCategoryType.expense);
+              },
+            ),
+          ),
+          Expanded(
+            child: _BreakdownTab(
+              label: 'reportIncome'.tr(),
+              isSelected: _controller.activeType == ReportCategoryType.income,
+              onTap: () {
+                setState(() {
+                  _touchedSectionIndex = -1;
+                });
+                _controller.setActiveType(ReportCategoryType.income);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBanner() {
+    if (!_controller.hasActiveSearch) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(top: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.28),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.08),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.search_rounded,
+            size: 18,
+            color: Colors.blue.shade300,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '${'reportSearchResultFor'.tr()} "${_controller.searchQuery}"',
+              style: const TextStyle(fontSize: 13),
+            ),
+          ),
+          TextButton(
+            onPressed: _controller.clearSearchQuery,
+            child: Text('reportClearFilter'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPieChartSection() {
+    final categories = _controller.activeBreakdown;
+
+    if (categories.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 44),
+        child: Column(
+          children: [
+            Icon(
+              Icons.pie_chart_outline_rounded,
+              color: Colors.grey.shade600,
+              size: 46,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'reportNoDataInRange'.tr(),
+              style: TextStyle(
+                color: Colors.grey.shade400,
+                fontSize: 15,
+              ),
+            ),
           ],
         ),
       );
     }
 
-    final locale = Localizations.localeOf(context).toString();
+    final selectedType = _controller.activeType;
+
+    final sections = categories.asMap().entries.map((entry) {
+      final index = entry.key;
+      final item = entry.value;
+      final isTouched = index == _touchedSectionIndex;
+      final color = _colorForBreakdownItem(index, selectedType);
+      final showLabel = item.percentage >= 0.08 || isTouched;
+
+      return PieChartSectionData(
+        color: color,
+        value: item.amount,
+        radius: isTouched ? 120 : 110,
+        title: showLabel ? _truncateCategoryLabel(item.name) : '',
+        titleStyle: TextStyle(
+          color: Colors.white,
+          fontSize: isTouched ? 14 : 12,
+          fontWeight: FontWeight.w700,
+        ),
+        titlePositionPercentageOffset: 0.74,
+      );
+    }).toList();
 
     return SizedBox(
-      height: 200,
-      child: Padding(
-        padding: const EdgeInsets.only(left: 10, right: 10, top: 16),
-        child: BarChart(
-          BarChartData(
-            alignment: BarChartAlignment.spaceAround,
-            barGroups: barGroups,
-            titlesData: FlTitlesData(
-              leftTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  reservedSize: 40,
-                  getTitlesWidget: (value, meta) {
-                    return Text(
-                      NumberFormat.compactCurrency(locale: locale, symbol: '')
-                          .format(value),
-                      style: const TextStyle(fontSize: 10),
-                    );
-                  },
-                ),
-              ),
-              bottomTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  reservedSize: 25,
-                  getTitlesWidget: (value, meta) {
-                    if (value.toInt() >= dateKeys.length) {
-                      return const SizedBox.shrink();
-                    }
+      height: 340,
+      child: PieChart(
+        PieChartData(
+          centerSpaceRadius: 60,
+          sectionsSpace: 0,
+          pieTouchData: PieTouchData(
+            touchCallback: (event, response) {
+              if (!event.isInterestedForInteractions ||
+                  response?.touchedSection == null) {
+                setState(() {
+                  _touchedSectionIndex = -1;
+                });
+                return;
+              }
 
-                    return SideTitleWidget(
-                      axisSide: meta.axisSide,
-                      space: 4,
-                      child: Text(
-                        dateKeys[value.toInt()].split('/')[0],
-                        style: const TextStyle(fontSize: 10),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              topTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-              rightTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-            ),
-            borderData: FlBorderData(show: false),
-            gridData: const FlGridData(show: true, drawVerticalLine: false),
+              setState(() {
+                _touchedSectionIndex =
+                    response!.touchedSection!.touchedSectionIndex;
+              });
+            },
           ),
+          sections: sections,
         ),
       ),
     );
   }
 
-  Widget _buildCategoryReportList(
-    BuildContext context,
-    Map<String, double> reportData,
-    Color color,
-  ) {
-    if (reportData.isEmpty) {
-      return Center(
-        child: Text(
-          'noDataForCategory'.tr(),
-          style: const TextStyle(fontStyle: FontStyle.italic),
+  Widget _buildCategoryRow(CategoryBreakdown item, int index) {
+    final color = _colorForBreakdownItem(index, _controller.activeType);
+
+    return InkWell(
+      onTap: () => _showCategoryDetails(item, color),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: Colors.white.withOpacity(0.08)),
+          ),
         ),
-      );
-    }
-
-    final sortedCategories = reportData.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    final totalAmount = reportData.values.fold(0.0, (sum, item) => sum + item);
-
-    return ListView.builder(
-      itemCount: sortedCategories.length,
-      itemBuilder: (context, index) {
-        final entry = sortedCategories[index];
-        final percentage = totalAmount > 0 ? entry.value / totalAmount : 0.0;
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-          child: Row(
-            children: [
-              Expanded(
-                flex: 4,
-                child: Text(
-                  entry.key,
-                  style: const TextStyle(fontWeight: FontWeight.w500),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 40,
+              child: Icon(
+                iconForCategory(item.name, item.type),
+                color: color,
+                size: 30,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                item.name,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              Expanded(
-                flex: 3,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      _formatAmount(entry.value, context),
-                      style: TextStyle(
-                        color: color,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      '${(percentage * 100).toStringAsFixed(1)}%',
-                      style:
-                          TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                    ),
-                  ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  _formatAmount(context, item.amount),
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildTransactionHistoryList(BuildContext context) {
-    if (_controller.transactions.isEmpty) {
-      return Center(child: Text('noTransactions'.tr()));
-    }
-
-    return ListView.builder(
-      itemCount: _controller.transactions.length,
-      itemBuilder: (context, index) {
-        final tx = _controller.transactions[index];
-        final isIncome = tx.type == 'income';
-        final title = tx.title.trim().isEmpty ? tx.category : tx.title.trim();
-        final subtitleText = '${_formatDate(tx.date)} - ${tx.category}';
-
-        return ListTile(
-          title: Text(title),
-          subtitle: Text(subtitleText),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                _formatAmount(tx.amount, context),
-                style: TextStyle(
-                  color: isIncome ? Colors.green : Colors.red,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(height: 2),
+                Text(
+                  '${(item.percentage * 100).toStringAsFixed(1)} %',
+                  style: TextStyle(
+                    color: Colors.grey.shade400,
+                    fontSize: 13,
+                  ),
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete, size: 20),
-                color: Colors.grey,
-                onPressed: () async {
-                  await _controller.deleteTransaction(tx.id!);
-                  if (!context.mounted) {
-                    return;
-                  }
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('transactionDeleted'.tr())),
-                  );
-                },
-              ),
-            ],
-          ),
-        );
-      },
+              ],
+            ),
+            const SizedBox(width: 10),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.grey.shade500,
+              size: 30,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -237,137 +647,337 @@ class _ReportScreenState extends State<ReportScreen> {
     return ListenableBuilder(
       listenable: _controller,
       builder: (context, child) {
-        if (_controller.isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
+        return Scaffold(
+          body: SafeArea(
+            child: _controller.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : RefreshIndicator(
+                    onRefresh: _controller.loadTransactions,
+                    color: Colors.blue.shade300,
+                    backgroundColor: Colors.grey.shade900,
+                    child: CustomScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
+                      slivers: [
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                            child: Column(
+                              children: [
+                                _buildTopToolbar(),
+                                const SizedBox(height: 18),
+                                _buildPeriodNavigator(),
+                                const SizedBox(height: 16),
+                                _buildSummaryCards(),
+                                const SizedBox(height: 18),
+                                _buildBreakdownSwitch(),
+                                _buildSearchBanner(),
+                                const SizedBox(height: 12),
+                                _buildPieChartSection(),
+                              ],
+                            ),
+                          ),
+                        ),
+                        if (_controller.activeBreakdown.isEmpty)
+                          SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 32,
+                                ),
+                                child: Text(
+                                  _controller.hasActiveSearch
+                                      ? 'reportNoSearchResults'.tr()
+                                      : 'reportNoDataInRange'.tr(),
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.grey.shade400,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        else
+                          SliverList.builder(
+                            itemCount: _controller.activeBreakdown.length,
+                            itemBuilder: (context, index) {
+                              return _buildCategoryRow(
+                                _controller.activeBreakdown[index],
+                                index,
+                              );
+                            },
+                          ),
+                      ],
+                    ),
+                  ),
+          ),
+        );
+      },
+    );
+  }
+}
 
-        return DefaultTabController(
-          length: 3,
-          child: Scaffold(
-            appBar: AppBar(
-              automaticallyImplyLeading: false,
-              title: Text('reportTitle'.tr()),
-              bottom: TabBar(
-                indicatorColor: Colors.blue.shade300,
-                tabs: [
-                  Tab(text: 'Expense by Category'.tr()),
-                  Tab(text: 'Income by Category'.tr()),
-                  Tab(text: 'History'.tr()),
-                ],
+class _ReportModeChip extends StatelessWidget {
+  const _ReportModeChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.grey.shade600 : Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: Colors.white.withOpacity(isSelected ? 1 : 0.92),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({
+    required this.label,
+    required this.value,
+    required this.valueColor,
+    this.isFullWidth = false,
+  });
+
+  final String label;
+  final String value;
+  final Color valueColor;
+  final bool isFullWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: isFullWidth ? 18 : 16,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.16),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.16),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 15,
+                color: Colors.white,
               ),
             ),
-            body: Column(
-              children: [
-                Card(
-                  margin: const EdgeInsets.all(8),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          'balance'.tr(),
-                          style:
-                              const TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _formatAmount(_controller.balance, context),
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: _controller.balance >= 0
-                                ? Colors.green
-                                : Colors.red,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'income'.tr(),
-                                  style: const TextStyle(color: Colors.green),
-                                ),
-                                Text(
-                                  _formatAmount(_controller.income, context),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'expense'.tr(),
-                                  style: const TextStyle(color: Colors.red),
-                                ),
-                                Text(
-                                  _formatAmount(_controller.expense, context),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                if (_controller.chartData.isNotEmpty)
-                  Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 16),
-                          child: Text(
-                            'chartTitle'.tr(),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        _buildBarChart(context),
-                      ],
-                    ),
-                  )
-                else
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      'noTransactions'.tr(),
-                      style: const TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                  ),
-                Expanded(
-                  child: TabBarView(
-                    children: [
-                      _buildCategoryReportList(
-                        context,
-                        _controller.expenseByCategory,
-                        Colors.red,
-                      ),
-                      _buildCategoryReportList(
-                        context,
-                        _controller.incomeByCategory,
-                        Colors.green,
-                      ),
-                      _buildTransactionHistoryList(context),
-                    ],
-                  ),
-                ),
-              ],
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: isFullWidth ? 24 : 20,
+              fontWeight: FontWeight.w800,
+              color: valueColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BreakdownTab extends StatelessWidget {
+  const _BreakdownTab({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: isSelected ? Colors.blue.shade300 : Colors.white,
+              ),
+            ),
+          ),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            height: 3,
+            color: isSelected ? Colors.blue.shade300 : Colors.transparent,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReportSearchDelegate extends SearchDelegate<String?> {
+  _ReportSearchDelegate({
+    required String initialQuery,
+    required this.categories,
+    required this.formatAmount,
+  }) {
+    query = initialQuery;
+  }
+
+  final List<CategoryBreakdown> categories;
+  final String Function(double amount) formatAmount;
+
+  Iterable<CategoryBreakdown> _matchResults(String rawQuery) {
+    final normalizedQuery = rawQuery.toLowerCase().trim();
+
+    if (normalizedQuery.isEmpty) {
+      return categories;
+    }
+
+    return categories.where((item) {
+      if (item.name.toLowerCase().contains(normalizedQuery)) {
+        return true;
+      }
+
+      return item.transactions.any((transaction) {
+        return transaction.title.toLowerCase().contains(normalizedQuery) ||
+            transaction.category.toLowerCase().contains(normalizedQuery);
+      });
+    });
+  }
+
+  @override
+  ThemeData appBarTheme(BuildContext context) {
+    final baseTheme = Theme.of(context);
+    return baseTheme.copyWith(
+      scaffoldBackgroundColor: Colors.grey.shade900,
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.grey.shade900,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      inputDecorationTheme: const InputDecorationTheme(
+        border: InputBorder.none,
+        hintStyle: TextStyle(color: Colors.grey),
+      ),
+      textTheme: baseTheme.textTheme.apply(bodyColor: Colors.white),
+    );
+  }
+
+  @override
+  String get searchFieldLabel => 'reportSearchHint'.tr();
+
+  @override
+  List<Widget>? buildActions(BuildContext context) {
+    return [
+      if (query.isNotEmpty)
+        IconButton(
+          onPressed: () {
+            query = '';
+            showSuggestions(context);
+          },
+          icon: const Icon(Icons.close_rounded),
+        ),
+      IconButton(
+        onPressed: () => close(context, query.trim()),
+        icon: const Icon(Icons.check_rounded),
+      ),
+    ];
+  }
+
+  @override
+  Widget? buildLeading(BuildContext context) {
+    return IconButton(
+      onPressed: () => close(context, null),
+      icon: const Icon(Icons.arrow_back_rounded),
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return _buildResultList(context);
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    return _buildResultList(context);
+  }
+
+  Widget _buildResultList(BuildContext context) {
+    final results = _matchResults(query).toList();
+
+    if (results.isEmpty) {
+      return Center(
+        child: Text(
+          'reportNoSearchResults'.tr(),
+          style: TextStyle(
+            color: Colors.grey.shade400,
+            fontSize: 15,
+          ),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      itemCount: results.length,
+      separatorBuilder: (_, __) => Divider(
+        color: Colors.white.withOpacity(0.08),
+        height: 1,
+      ),
+      itemBuilder: (context, index) {
+        final item = results[index];
+        return ListTile(
+          onTap: () => close(context, query.trim().isEmpty ? item.name : query),
+          title: Text(
+            item.name,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          subtitle: Text(
+            '${item.transactions.length} ${'reportTransactionsLabel'.tr()}',
+            style: TextStyle(color: Colors.grey.shade400),
+          ),
+          trailing: Text(
+            formatAmount(item.amount),
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
             ),
           ),
         );

@@ -17,6 +17,18 @@
   "Expense by Category": "Expense by Category",
   "Income by Category": "Income by Category",
   "History": "History",
+  "reportMonthly": "Monthly",
+  "reportYearly": "Yearly",
+  "reportExpense": "Expense",
+  "reportIncome": "Income",
+  "reportNet": "Net",
+  "reportSearch": "Search",
+  "reportSearchHint": "Search categories or notes",
+  "reportSearchResultFor": "Results for",
+  "reportClearFilter": "Clear",
+  "reportNoDataInRange": "No data in this period.",
+  "reportNoSearchResults": "No matching results found.",
+  "reportTransactionsLabel": "transactions",
   "selectLanguage": "Select Language",
   "hello": "Hello"
 }

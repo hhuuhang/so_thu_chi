@@ -26,6 +26,11 @@ void main() {
       expect(find.byType(InputScreen), findsOneWidget);
       expect(find.byType(TextField), findsNWidgets(2));
       expect(find.text('Danh mục'), findsOneWidget);
+
+      await tester.tap(find.text('Tiền thu'));
+      await tester.pump();
+
+      expect(find.text('Khác'), findsOneWidget);
     },
   );
 }

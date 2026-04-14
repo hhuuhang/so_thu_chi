@@ -17,6 +17,18 @@
   "Expense by Category": "Chi theo danh mục",
   "Income by Category": "Thu theo danh mục",
   "History": "Lịch sử",
+  "reportMonthly": "Hàng Tháng",
+  "reportYearly": "Hàng Năm",
+  "reportExpense": "Chi tiêu",
+  "reportIncome": "Thu nhập",
+  "reportNet": "Thu chi",
+  "reportSearch": "Tìm kiếm",
+  "reportSearchHint": "Tìm kiếm danh mục hoặc ghi chú",
+  "reportSearchResultFor": "Kết quả cho",
+  "reportClearFilter": "Xóa lọc",
+  "reportNoDataInRange": "Chưa có dữ liệu trong kỳ này.",
+  "reportNoSearchResults": "Không tìm thấy kết quả phù hợp.",
+  "reportTransactionsLabel": "giao dịch",
   "selectLanguage": "Chọn ngôn ngữ",
   "hello": "Xin chào"
 }
