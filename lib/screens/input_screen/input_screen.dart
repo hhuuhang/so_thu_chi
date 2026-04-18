@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../constants.dart' show TransactionType;
+import '../../category_catalog.dart' show colorForCategory;
 import '../../modules/custom_numpad/numpad.dart';
 import 'input_controller.dart';
 
@@ -15,7 +16,7 @@ class InputScreen extends StatelessWidget {
         ? Colors.red.shade400
         : Colors.green.shade400;
     final pressedColor =
-        Color.alphaBlend(Colors.black.withOpacity(0.08), baseColor);
+        Color.alphaBlend(Colors.black.withValues(alpha: 0.08), baseColor);
 
     showModalBottomSheet<void>(
       context: context,
@@ -87,17 +88,22 @@ class InputScreen extends StatelessWidget {
           final categoryName = categories.keys.elementAt(index);
           final icon = categories.values.elementAt(index);
           final isSelected = controller.selectedCategory == categoryName;
+          final categoryColor = colorForCategory(
+              categoryName,
+              controller.currentType == TransactionType.expense
+                  ? 'expense'
+                  : 'income');
 
           return GestureDetector(
             onTap: () => controller.setSelectedCategory(categoryName),
             child: Container(
               decoration: BoxDecoration(
                 color: isSelected
-                    ? primaryColor.withOpacity(0.2)
+                    ? categoryColor.withValues(alpha: 0.2)
                     : darkBackgroundColor,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: isSelected ? primaryColor : Colors.grey.shade700,
+                  color: isSelected ? categoryColor : Colors.grey.shade700,
                   width: isSelected ? 2 : 1,
                 ),
               ),
@@ -107,7 +113,7 @@ class InputScreen extends StatelessWidget {
                 children: [
                   Icon(
                     icon,
-                    color: isSelected ? primaryColor : Colors.white,
+                    color: isSelected ? categoryColor : categoryColor.withValues(alpha: 0.7),
                     size: 28,
                   ),
                   const SizedBox(height: 4),
@@ -115,7 +121,7 @@ class InputScreen extends StatelessWidget {
                     categoryName,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: isSelected ? primaryColor : Colors.white,
+                      color: isSelected ? categoryColor : categoryColor.withValues(alpha: 0.7),
                       fontSize: 12,
                     ),
                   ),

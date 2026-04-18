@@ -143,18 +143,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }) {
     final balance = _balanceForDay(day);
     final amountColor = isOutside
-        ? _amountColor(balance).withOpacity(0.55)
+        ? _amountColor(balance).withValues(alpha: 0.55)
         : _amountColor(balance);
     final borderColor = isSelected
         ? Colors.blue.shade300
         : isToday
             ? Colors.lightBlue.shade200
-            : Colors.white.withOpacity(isOutside ? 0.08 : 0.12);
+            : Colors.white.withValues(alpha: isOutside ? 0.08 : 0.12);
     final backgroundColor = isSelected
-        ? Colors.blue.withOpacity(0.18)
+        ? Colors.blue.withValues(alpha: 0.18)
         : isToday
-            ? Colors.lightBlue.withOpacity(0.1)
-            : Colors.white.withOpacity(isOutside ? 0.02 : 0.04);
+            ? Colors.lightBlue.withValues(alpha: 0.1)
+            : Colors.white.withValues(alpha: isOutside ? 0.02 : 0.04);
     final dayTextColor = isSelected
         ? Colors.white
         : isOutside
@@ -225,10 +225,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: amountColor.withOpacity(0.22),
+          color: amountColor.withValues(alpha: 0.22),
         ),
       ),
       child: Row(
@@ -238,7 +238,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: amountColor.withOpacity(0.14),
+              color: amountColor.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(

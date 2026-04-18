@@ -23,29 +23,6 @@ class _ReportScreenState extends State<ReportScreen> {
   late final bool _ownsController;
   int _touchedSectionIndex = -1;
 
-  static const List<Color> _expensePalette = <Color>[
-    Color(0xFFFF5A4E),
-    Color(0xFFFF7A45),
-    Color(0xFFFFC24B),
-    Color(0xFFD26DFF),
-    Color(0xFF2D5BFF),
-    Color(0xFF4FC3F7),
-    Color(0xFFE1BEE7),
-    Color(0xFF81C784),
-    Color(0xFFFFA726),
-    Color(0xFFFF7043),
-    Color(0xFFEF5350),
-    Color(0xFFFFD54F),
-  ];
-
-  static const List<Color> _incomePalette = <Color>[
-    Color(0xFF64B5F6),
-    Color(0xFF4DD0E1),
-    Color(0xFF81C784),
-    Color(0xFFFFD54F),
-    Color(0xFFBA68C8),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -83,16 +60,7 @@ class _ReportScreenState extends State<ReportScreen> {
     return '$sign${_formatAmount(context, amount)}';
   }
 
-  List<Color> _paletteForType(ReportCategoryType type) {
-    return type == ReportCategoryType.expense
-        ? _expensePalette
-        : _incomePalette;
-  }
 
-  Color _colorForBreakdownItem(int index, ReportCategoryType type) {
-    final palette = _paletteForType(type);
-    return palette[index % palette.length];
-  }
 
   String _truncateCategoryLabel(String value) {
     if (value.length <= 10) {
@@ -149,7 +117,7 @@ class _ReportScreenState extends State<ReportScreen> {
                   top: Radius.circular(28),
                 ),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.08),
+                  color: Colors.white.withValues(alpha: 0.08),
                 ),
               ),
               child: Column(
@@ -159,7 +127,7 @@ class _ReportScreenState extends State<ReportScreen> {
                     width: 42,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.16),
+                      color: Colors.white.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
@@ -171,7 +139,7 @@ class _ReportScreenState extends State<ReportScreen> {
                           width: 46,
                           height: 46,
                           decoration: BoxDecoration(
-                            color: accentColor.withOpacity(0.16),
+                            color: accentColor.withValues(alpha: 0.16),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Icon(
@@ -226,7 +194,7 @@ class _ReportScreenState extends State<ReportScreen> {
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                       itemCount: item.transactions.length,
                       separatorBuilder: (_, __) => Divider(
-                        color: Colors.white.withOpacity(0.08),
+                        color: Colors.white.withValues(alpha: 0.08),
                         height: 1,
                       ),
                       itemBuilder: (context, index) {
@@ -299,7 +267,7 @@ class _ReportScreenState extends State<ReportScreen> {
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.42),
+                color: Colors.black.withValues(alpha: 0.42),
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Row(
@@ -429,7 +397,7 @@ class _ReportScreenState extends State<ReportScreen> {
     return Container(
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: Colors.white.withOpacity(0.14)),
+          bottom: BorderSide(color: Colors.white.withValues(alpha: 0.14)),
         ),
       ),
       child: Row(
@@ -472,10 +440,10 @@ class _ReportScreenState extends State<ReportScreen> {
       margin: const EdgeInsets.only(top: 14),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.28),
+        color: Colors.black.withValues(alpha: 0.28),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: Colors.white.withOpacity(0.08),
+          color: Colors.white.withValues(alpha: 0.08),
         ),
       ),
       child: Row(
@@ -533,7 +501,7 @@ class _ReportScreenState extends State<ReportScreen> {
       final index = entry.key;
       final item = entry.value;
       final isTouched = index == _touchedSectionIndex;
-      final color = _colorForBreakdownItem(index, selectedType);
+      final color = colorForCategory(item.name, selectedType.name);
       final showLabel = item.percentage >= 0.08 || isTouched;
 
       return PieChartSectionData(
@@ -579,7 +547,7 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Widget _buildCategoryRow(CategoryBreakdown item, int index) {
-    final color = _colorForBreakdownItem(index, _controller.activeType);
+    final color = colorForCategory(item.name, _controller.activeType.name);
 
     return InkWell(
       onTap: () => _showCategoryDetails(item, color),
@@ -587,7 +555,7 @@ class _ReportScreenState extends State<ReportScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
         decoration: BoxDecoration(
           border: Border(
-            bottom: BorderSide(color: Colors.white.withOpacity(0.08)),
+            bottom: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
           ),
         ),
         child: Row(
@@ -747,7 +715,7 @@ class _ReportModeChip extends StatelessWidget {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: Colors.white.withOpacity(isSelected ? 1 : 0.92),
+            color: Colors.white.withValues(alpha: isSelected ? 1 : 0.92),
           ),
         ),
       ),
@@ -777,10 +745,10 @@ class _SummaryCard extends StatelessWidget {
         vertical: isFullWidth ? 18 : 16,
       ),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.16),
+        color: Colors.black.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: Colors.white.withOpacity(0.16),
+          color: Colors.white.withValues(alpha: 0.16),
         ),
       ),
       child: Row(
@@ -955,7 +923,7 @@ class _ReportSearchDelegate extends SearchDelegate<String?> {
       padding: const EdgeInsets.symmetric(vertical: 12),
       itemCount: results.length,
       separatorBuilder: (_, __) => Divider(
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white.withValues(alpha: 0.08),
         height: 1,
       ),
       itemBuilder: (context, index) {
