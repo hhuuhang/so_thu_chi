@@ -12,21 +12,29 @@ class InputScreen extends StatelessWidget {
 
   void _showCustomNumpadSheet(
       BuildContext context, InputController controller) {
-    final baseColor = controller.currentType == TransactionType.expense
-        ? Colors.red.shade400
-        : Colors.green.shade400;
-    final pressedColor =
-        Color.alphaBlend(Colors.black.withValues(alpha: 0.08), baseColor);
+    // Determine the primary color based on transaction type for subtle pressed effect
+    final primaryColor = controller.currentType == TransactionType.expense
+        ? Colors.red
+        : Colors.green;
+        
+    // Professional dark theme colors for numpad
+    final buttonColor = Colors.grey.shade800;
+    // When pressed, blend a little bit of the primary color with the dark grey
+    final pressedColor = Color.alphaBlend(
+      primaryColor.withValues(alpha: 0.3),
+      Colors.grey.shade700,
+    );
 
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.grey.shade900, // Match app background
       barrierColor: Colors.transparent,
       builder: (BuildContext context) {
         return CustomNumpad(
           onKeyPress: controller.handleKeyPress,
           onErasePress: controller.handleErasePress,
-          buttonColor: baseColor,
+          buttonColor: buttonColor,
           pressedColor: pressedColor,
           textColor: Colors.white,
           buttonSize: 70,

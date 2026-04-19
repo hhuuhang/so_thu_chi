@@ -385,8 +385,14 @@ class _ReportScreenState extends State<ReportScreen> {
         const SizedBox(height: 10),
         _SummaryCard(
           label: 'reportNet'.tr(),
-          value: _formatSignedAmount(context, _controller.balance),
-          valueColor: Colors.white,
+          value: _formatSignedAmount(
+            context,
+            _controller.balance,
+            alwaysShowSign: _controller.balance > 0,
+          ),
+          valueColor: _controller.balance < 0
+              ? Colors.red.shade400
+              : (_controller.balance > 0 ? Colors.lightBlue.shade300 : Colors.white),
           isFullWidth: true,
         ),
       ],
@@ -751,23 +757,27 @@ class _SummaryCard extends StatelessWidget {
           color: Colors.white.withValues(alpha: 0.16),
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 15,
-                color: Colors.white,
-              ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade300,
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: isFullWidth ? 24 : 20,
-              fontWeight: FontWeight.w800,
-              color: valueColor,
+          const SizedBox(height: 6),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: isFullWidth ? 24 : 20,
+                fontWeight: FontWeight.w800,
+                color: valueColor,
+              ),
             ),
           ),
         ],

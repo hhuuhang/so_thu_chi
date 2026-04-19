@@ -131,7 +131,7 @@ class CustomNumpad extends StatelessWidget {
         borderRadius: BorderRadius.circular(buttonSize / 2),
         child: Icon(
           Icons.backspace_outlined,
-          color: buttonColor, // Sử dụng màu nút bấm cho Icon
+          color: textColor, // Sử dụng textColor cho Icon để dễ nhìn trên nền tối
           size: fontSize,
         ),
       ),
