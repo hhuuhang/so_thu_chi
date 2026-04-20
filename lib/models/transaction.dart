@@ -45,6 +45,24 @@ class Transaction {
     );
   }
 
+  Transaction copyWith({
+    int? id,
+    String? title,
+    double? amount,
+    DateTime? date,
+    String? type,
+    String? category,
+  }) {
+    return Transaction(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      amount: amount ?? this.amount,
+      date: date ?? this.date,
+      type: type ?? this.type,
+      category: category ?? this.category,
+    );
+  }
+
   String get formattedDate => DateFormat('dd/MM/yyyy').format(date);
 
   String get formattedAmount {

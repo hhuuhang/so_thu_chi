@@ -73,6 +73,16 @@ class DatabaseHelper {
     return db.insert('transactions', transaction.toMap());
   }
 
+  Future<int> updateTransaction(mymodel.Transaction transaction) async {
+    final db = await database;
+    return db.update(
+      'transactions',
+      transaction.toMap(),
+      where: 'id = ?',
+      whereArgs: [transaction.id],
+    );
+  }
+
   Future<List<mymodel.Transaction>> getTransactions() async {
     final db = await database;
     final maps = await db.query('transactions', orderBy: 'date DESC');

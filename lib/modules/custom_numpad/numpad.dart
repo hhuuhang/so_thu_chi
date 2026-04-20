@@ -81,14 +81,11 @@ class _NumpadButtonState extends State<_NumpadButton> {
 class CustomNumpad extends StatelessWidget {
   final NumpadCallback onKeyPress;
   final VoidCallback onErasePress;
+  final VoidCallback? onDone;
   final Color buttonColor;
   final Color textColor;
   final double buttonSize;
   final double fontSize;
-
-  // Tùy chọn: Widget cho phím đặc biệt (ví dụ: dấu chấm, enter)
-  // final Widget? specialButton;
-  // final String specialValue;
 
   //THÊM MÀU KHI NHẤN
   final Color pressedColor;
@@ -97,14 +94,14 @@ class CustomNumpad extends StatelessWidget {
     super.key,
     required this.onKeyPress,
     required this.onErasePress,
+    this.onDone,
     this.buttonColor = Colors.blueGrey,
     this.textColor = Colors.white,
     this.buttonSize = 80.0,
     this.fontSize = 30.0,
-    // this.specialValue = '.',
     Color? pressedColor,
   }) : pressedColor =
-            pressedColor ?? Colors.black54; // Gán màu nhấn tĩnh hoặc mặc định
+            pressedColor ?? Colors.black54;
 
   // Widget riêng để tạo một nút bấm số/đặc biệt
   Widget _buildButton(String value) {
@@ -119,20 +116,61 @@ class CustomNumpad extends StatelessWidget {
     );
   }
 
-  // Widget riêng để tạo nút xoá (Back button) - Sử dụng InkWell cho hiệu ứng gợn sóng mặc định
+  // Nút xoá
   Widget _buildEraseButton() {
     return Container(
       width: buttonSize,
       height: buttonSize,
       margin: const EdgeInsets.all(8.0),
       child: InkWell(
-        // Sử dụng InkWell vì nó đã có hiệu ứng nhấn tích hợp
         onTap: onErasePress,
         borderRadius: BorderRadius.circular(buttonSize / 2),
         child: Icon(
           Icons.backspace_outlined,
-          color: textColor, // Sử dụng textColor cho Icon để dễ nhìn trên nền tối
+          color: textColor,
           size: fontSize,
+        ),
+      ),
+    );
+  }
+
+  // Nút "Hoàn thành" — pill button canh phải (cột số 3)
+  Widget _buildDoneButton(BuildContext context) {
+    final callback = onDone ?? () => Navigator.of(context).pop();
+    return SizedBox(
+      width: buttonSize + 16, // cùng vùng chiếm chỗ với nút số
+      height: 40,
+      child: GestureDetector(
+        onTap: callback,
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF2C2C2E),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.12),
+            ),
+          ),
+          alignment: Alignment.center,
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.keyboard_hide_rounded,
+                color: Color(0xFF636366),
+                size: 16,
+              ),
+              SizedBox(width: 5),
+              Text(
+                'Xong',
+                style: TextStyle(
+                  color: Color(0xFFAEAEB2),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -145,6 +183,16 @@ class CustomNumpad extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
+          // Hàng trên: nút "Xong" canh phải (vị trí cột số 3)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              SizedBox(width: buttonSize + 16),
+              SizedBox(width: buttonSize + 16),
+              _buildDoneButton(context),
+            ],
+          ),
+          const SizedBox(height: 4),
           // Hàng 1: 1, 2, 3
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,

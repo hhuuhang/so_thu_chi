@@ -21,7 +21,7 @@ class InputScreen extends StatelessWidget {
     final buttonColor = Colors.grey.shade800;
     // When pressed, blend a little bit of the primary color with the dark grey
     final pressedColor = Color.alphaBlend(
-      primaryColor.withValues(alpha: 0.3),
+      primaryColor.withOpacity(0.3),
       Colors.grey.shade700,
     );
 
@@ -73,9 +73,7 @@ class InputScreen extends StatelessWidget {
 
   Widget _buildCategoryGrid(InputController controller) {
     final categories = controller.currentCategories;
-    final primaryColor = controller.currentType == TransactionType.expense
-        ? Colors.red
-        : Colors.green;
+
     final darkBackgroundColor = Colors.grey.shade900;
     final rowCount = (categories.length / 3).ceil();
     final gridHeight = rowCount * 1.1 * 100;
@@ -107,7 +105,7 @@ class InputScreen extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 color: isSelected
-                    ? categoryColor.withValues(alpha: 0.2)
+                    ? categoryColor.withOpacity(0.2)
                     : darkBackgroundColor,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
@@ -121,7 +119,7 @@ class InputScreen extends StatelessWidget {
                 children: [
                   Icon(
                     icon,
-                    color: isSelected ? categoryColor : categoryColor.withValues(alpha: 0.7),
+                    color: isSelected ? categoryColor : categoryColor.withOpacity(0.7),
                     size: 28,
                   ),
                   const SizedBox(height: 4),
@@ -129,7 +127,7 @@ class InputScreen extends StatelessWidget {
                     categoryName,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: isSelected ? categoryColor : categoryColor.withValues(alpha: 0.7),
+                      color: isSelected ? categoryColor : categoryColor.withOpacity(0.7),
                       fontSize: 12,
                     ),
                   ),
@@ -172,6 +170,15 @@ class InputScreen extends StatelessWidget {
             appBar: AppBar(
               toolbarHeight: 60,
               automaticallyImplyLeading: false,
+              leading: controller.isEditMode
+                  ? IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () {
+                        controller.resetToCreateMode();
+                        Navigator.of(context).maybePop();
+                      },
+                    )
+                  : null,
               title: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
@@ -198,12 +205,7 @@ class InputScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              actions: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.edit, color: Colors.white),
-                ),
-              ],
+              actions: const [],
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(40),
                 child: Padding(
@@ -306,18 +308,37 @@ class InputScreen extends StatelessWidget {
                   Center(
                     child: ElevatedButton(
                       style: ButtonStyle(
+                        minimumSize: WidgetStateProperty.all(
+                          const Size(200, 50),
+                        ),
+                        shape: WidgetStateProperty.all(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                        ),
                         backgroundColor:
                             WidgetStateProperty.resolveWith((states) {
                           if (states.contains(WidgetState.pressed)) {
-                            return Colors.green;
+                            return controller.isEditMode
+                                ? Colors.blue.shade700
+                                : Colors.green.shade700;
                           }
-                          return Colors.white;
+                          return controller.isEditMode
+                              ? Colors.blue.shade400
+                              : Colors.white;
+                        }),
+                        foregroundColor:
+                            WidgetStateProperty.resolveWith((states) {
+                          return controller.isEditMode
+                              ? Colors.white
+                              : Colors.black87;
                         }),
                       ),
                       onPressed: () => controller.addTransaction(context),
-                      child: const Text(
-                        'Hoàn thành',
-                        style: TextStyle(color: Colors.black, fontSize: 16),
+                      child: Text(
+                        controller.isEditMode ? 'Cập nhật' : 'Hoàn thành',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                     ),
                   ),

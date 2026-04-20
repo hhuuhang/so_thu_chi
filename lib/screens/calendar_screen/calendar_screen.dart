@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../database/database_helper.dart';
 import '../../models/transaction.dart';
+import '../input_screen/input_controller.dart';
+import '../input_screen/input_screen.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({
@@ -22,8 +25,8 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   static final NumberFormat _amountFormatter =
       NumberFormat.decimalPattern('vi_VN');
-  static final DateFormat _dateFormatter = DateFormat('dd/MM/yyyy');
-  static final DateFormat _timeFormatter = DateFormat('HH:mm');
+  static final DateFormat _dayHeaderFormatter = DateFormat('dd/MM/yyyy');
+  static final DateFormat _dayOfWeekFormatter = DateFormat('EEE', 'vi_VN');
 
   final DatabaseHelper _dbHelper = DatabaseHelper();
   final Map<DateTime, double> _dailyBalances = <DateTime, double>{};
@@ -108,8 +111,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return _dailyBalances[_normalizeDay(day)] ?? 0;
   }
 
-  List<Transaction> _transactionsForDay(DateTime day) {
-    return _transactionsByDay[_normalizeDay(day)] ?? const <Transaction>[];
+
+  /// Tất cả giao dịch trong tháng của [month], sắp xếp mới nhất trước.
+  List<Transaction> _transactionsForMonth(DateTime month) {
+    final result = <Transaction>[];
+    for (final entry in _transactionsByDay.entries) {
+      if (entry.key.year == month.year && entry.key.month == month.month) {
+        result.addAll(entry.value);
+      }
+    }
+    result.sort((a, b) => b.date.compareTo(a.date));
+    return result;
   }
 
   String _formatCompactAmount(double amount) {
@@ -143,18 +155,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }) {
     final balance = _balanceForDay(day);
     final amountColor = isOutside
-        ? _amountColor(balance).withValues(alpha: 0.55)
+        ? _amountColor(balance).withOpacity(0.55)
         : _amountColor(balance);
     final borderColor = isSelected
         ? Colors.blue.shade300
         : isToday
             ? Colors.lightBlue.shade200
-            : Colors.white.withValues(alpha: isOutside ? 0.08 : 0.12);
+            : Colors.white.withOpacity(isOutside ? 0.08 : 0.12);
     final backgroundColor = isSelected
-        ? Colors.blue.withValues(alpha: 0.18)
+        ? Colors.blue.withOpacity(0.18)
         : isToday
-            ? Colors.lightBlue.withValues(alpha: 0.1)
-            : Colors.white.withValues(alpha: isOutside ? 0.02 : 0.04);
+            ? Colors.lightBlue.withOpacity(0.1)
+            : Colors.white.withOpacity(isOutside ? 0.02 : 0.04);
     final dayTextColor = isSelected
         ? Colors.white
         : isOutside
@@ -216,77 +228,129 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
+  // ---------- Transaction card (no time subtitle) ----------
   Widget _buildTransactionCard(Transaction transaction) {
     final isIncome = transaction.type == 'income';
     final signedAmount = _toSignedAmount(transaction);
     final amountColor = isIncome ? Colors.green.shade400 : Colors.red.shade300;
     final note = transaction.title.trim();
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: amountColor.withValues(alpha: 0.22),
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: amountColor.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              isIncome ? Icons.south_west_rounded : Icons.north_east_rounded,
-              color: amountColor,
-            ),
+    return GestureDetector(
+      onTap: () => _openEditScreen(transaction),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.04),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: amountColor.withOpacity(0.18),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Mục: ${transaction.category}',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${isIncome ? 'Thu' : 'Chi'} lúc ${_timeFormatter.format(transaction.date)}',
-                  style: TextStyle(
-                    color: Colors.grey.shade400,
-                    fontSize: 12,
-                  ),
-                ),
-                if (note.isNotEmpty) ...[
-                  const SizedBox(height: 6),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: amountColor.withOpacity(0.14),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                isIncome ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
+                color: amountColor,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    'Ghi chú: $note',
-                    style: TextStyle(
-                      color: Colors.grey.shade200,
-                      fontSize: 13,
-                      height: 1.35,
+                    transaction.category,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
+                  if (note.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      note,
+                      style: TextStyle(
+                        color: Colors.grey.shade400,
+                        fontSize: 12,
+                        height: 1.3,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ],
-              ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              _formatCompactAmount(signedAmount),
+              style: TextStyle(
+                color: amountColor,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Opens InputScreen pre-loaded with [transaction] for editing.
+  Future<void> _openEditScreen(Transaction transaction) async {
+    final controller =
+        Provider.of<InputController>(context, listen: false);
+    controller.loadForEdit(transaction);
+
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ChangeNotifierProvider<InputController>.value(
+          value: controller,
+          child: const InputScreen(),
+        ),
+      ),
+    );
+
+    // After returning, reset and reload calendar data.
+    controller.resetToCreateMode();
+    await _loadCalendarData();
+  }
+
+  // ---------- Day header row ----------
+  Widget _buildDayHeader(DateTime day) {
+    final balance = _balanceForDay(day);
+    final balanceColor = _amountColor(balance);
+    final dayLabel =
+        '${_dayHeaderFormatter.format(day)} (${_dayOfWeekFormatter.format(day)})';
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4, bottom: 6),
+      child: Row(
+        children: [
+          Text(
+            dayLabel,
+            style: TextStyle(
+              color: Colors.grey.shade300,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(width: 12),
+          const Spacer(),
           Text(
-            _formatCompactAmount(signedAmount),
+            _formatCompactAmount(balance),
             style: TextStyle(
-              color: amountColor,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
+              color: balanceColor,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -294,14 +358,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
+  // ---------- Grouped transaction list ----------
   Widget _buildTransactionList() {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final dayTransactions = _transactionsForDay(_selectedDay);
+    // Collect days that belong to the focused month, sorted newest first.
+    final days = _transactionsByDay.keys
+        .where((d) =>
+            d.year == _focusedDay.year && d.month == _focusedDay.month)
+        .toList()
+      ..sort((a, b) => b.compareTo(a));
 
-    if (dayTransactions.isEmpty) {
+    if (days.isEmpty) {
       return ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
@@ -314,7 +384,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           const SizedBox(height: 12),
           Center(
             child: Text(
-              'Không có giao dịch trong ngày này.',
+              'Không có giao dịch trong tháng này.',
               style: TextStyle(
                 color: Colors.grey.shade400,
                 fontSize: 14,
@@ -325,13 +395,34 @@ class _CalendarScreenState extends State<CalendarScreen> {
       );
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.only(bottom: 12),
+    // Build flat list of items: header + transactions per day.
+    final items = <_ListItem>[];
+    for (final day in days) {
+      items.add(_DayHeaderItem(day));
+      final txs = _transactionsByDay[day]!;
+      // Within a day show newest first.
+      final sorted = txs.toList()
+        ..sort((a, b) => b.date.compareTo(a.date));
+      for (final tx in sorted) {
+        items.add(_TransactionItem(tx));
+      }
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 16),
       physics: const AlwaysScrollableScrollPhysics(),
-      itemCount: dayTransactions.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      itemCount: items.length,
       itemBuilder: (context, index) {
-        return _buildTransactionCard(dayTransactions[index]);
+        final item = items[index];
+        if (item is _DayHeaderItem) {
+          return _buildDayHeader(item.day);
+        } else if (item is _TransactionItem) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: _buildTransactionCard(item.transaction),
+          );
+        }
+        return const SizedBox.shrink();
       },
     );
   }
@@ -441,7 +532,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Chi tiết thu chi ${_dateFormatter.format(_selectedDay)}',
+                      'Chi tiết tháng ${DateFormat('MM/yyyy').format(_focusedDay)}',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -449,7 +540,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${_transactionsForDay(_selectedDay).length} giao dịch',
+                      '${_transactionsForMonth(_focusedDay).length} giao dịch',
                       style: TextStyle(
                         color: Colors.grey.shade400,
                         fontSize: 13,
@@ -468,4 +559,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
       ),
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Helper sealed classes for the grouped list
+// ---------------------------------------------------------------------------
+
+sealed class _ListItem {}
+
+final class _DayHeaderItem extends _ListItem {
+  _DayHeaderItem(this.day);
+  final DateTime day;
+}
+
+final class _TransactionItem extends _ListItem {
+  _TransactionItem(this.transaction);
+  final Transaction transaction;
 }
