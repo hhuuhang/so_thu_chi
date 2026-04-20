@@ -18,22 +18,13 @@ Theo dõi dòng tiền hàng ngày thông qua giao diện lịch trực quan. Bi
 - **Thống kê tổng quát**: Xem nhanh Tổng thu, Tổng chi và Số dư trong tháng/năm.
 - **Lọc theo thời gian**: Dễ dàng xem lại dữ liệu cũ theo tháng hoặc năm.
 
-### 🎨 Trải Nghiệm Người Dùng Đỉnh Cao
+### 🎨 Trải Nghiệm Người Dùng
 - **Chế độ Sáng/Tối (Light/Dark Mode)**: Tự động chuyển đổi hoặc lựa chọn theo sở thích.
-- **Đa ngôn ngữ**: Hỗ trợ đầy đủ tiếng Việt 🇻🇳 và tiếng Anh 🇬🇧.
+- **Đa ngôn ngữ**: Hỗ trợ tiếng Việt và tiếng Anh.
 - **Bàn phím tùy chỉnh**: Nhập liệu số tiền cực nhanh với Numpad chuyên dụng tích hợp sẵn.
 
 ### 🔒 An Toàn & Bảo Mật
 Dữ liệu của bạn được lưu trữ hoàn toàn cục bộ trên thiết bị bằng **SQLite**, đảm bảo quyền riêng tư tuyệt đối.
-
----
-
-## 📸 Hình Ảnh Ứng Dụng
-
-| Màn Hình Nhập Liệu | Báo Cáo Biểu Đồ | Lịch Giao Dịch |
-|:---:|:---:|:---:|
-| <img src="assets/screenshots/input_dark.png" width="250"> | <img src="assets/screenshots/report_dark.png" width="250"> | <img src="assets/screenshots/calendar_dark.png" width="250"> |
-| *Nhập liệu nhanh chóng* | *Phân tích chi tiết* | *Quản lý theo ngày* |
 
 ---
 
@@ -82,4 +73,4 @@ Mọi đóng góp nhằm cải thiện ứng dụng đều được trân trọn
 Dự án này được phân phối dưới giấy phép MIT. Xem file `LICENSE` để biết thêm chi tiết.
 
 ---
-*Phát triển bởi [hhuuhang](https://github.com/hhuuhang) với ❤️*
+*Phát triển bởi: [hhuuhang](https://github.com/hhuuhang) with ❤️*
