@@ -5,6 +5,7 @@ import 'package:table_calendar/table_calendar.dart';
 
 import '../../database/database_helper.dart';
 import '../../models/transaction.dart';
+import '../../theme/app_colors.dart';
 import '../input_screen/input_controller.dart';
 import '../input_screen/input_screen.dart';
 
@@ -134,16 +135,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return '$sign$formattedAmountđ';
   }
 
-  Color _amountColor(double amount) {
+  Color _amountColor(double amount, ColorScheme colors) {
     if (amount > 0) {
-      return Colors.green.shade400;
+      return colors.incomeColor;
     }
 
     if (amount < 0) {
-      return Colors.red.shade300;
+      return colors.expenseColor;
     }
 
-    return Colors.grey.shade500;
+    return colors.textTertiary;
   }
 
   Widget _buildDayCell(
@@ -153,25 +154,31 @@ class _CalendarScreenState extends State<CalendarScreen> {
     bool isSelected = false,
     bool isToday = false,
   }) {
+    final colors = Theme.of(context).colorScheme;
     final balance = _balanceForDay(day);
+    final baseAmountColor = _amountColor(balance, colors);
     final amountColor = isOutside
-        ? _amountColor(balance).withOpacity(0.55)
-        : _amountColor(balance);
+        ? baseAmountColor.withValues(alpha: 0.55)
+        : baseAmountColor;
     final borderColor = isSelected
         ? Colors.blue.shade300
         : isToday
             ? Colors.lightBlue.shade200
-            : Colors.white.withOpacity(isOutside ? 0.08 : 0.12);
+            : isOutside
+                ? colors.calendarOutsideBorder
+                : colors.calendarNormalBorder;
     final backgroundColor = isSelected
-        ? Colors.blue.withOpacity(0.18)
+        ? Colors.blue.withValues(alpha: 0.18)
         : isToday
-            ? Colors.lightBlue.withOpacity(0.1)
-            : Colors.white.withOpacity(isOutside ? 0.02 : 0.04);
+            ? Colors.lightBlue.withValues(alpha: 0.1)
+            : isOutside
+                ? colors.calendarOutsideBg
+                : colors.calendarNormalBg;
     final dayTextColor = isSelected
-        ? Colors.white
+        ? colors.primary
         : isOutside
-            ? Colors.grey.shade600
-            : Theme.of(context).colorScheme.onSurface;
+            ? colors.calendarOutsideText
+            : colors.textPrimary;
 
     return Container(
       margin: const EdgeInsets.all(1),
@@ -230,9 +237,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   // ---------- Transaction card (no time subtitle) ----------
   Widget _buildTransactionCard(Transaction transaction) {
+    final colors = Theme.of(context).colorScheme;
     final isIncome = transaction.type == 'income';
     final signedAmount = _toSignedAmount(transaction);
-    final amountColor = isIncome ? Colors.green.shade400 : Colors.red.shade300;
+    final amountColor = isIncome ? colors.incomeColor : colors.expenseColor;
     final note = transaction.title.trim();
 
     return GestureDetector(
@@ -240,10 +248,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.04),
+          color: colors.cardBg,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: amountColor.withOpacity(0.18),
+            color: amountColor.withValues(alpha: 0.18),
           ),
         ),
         child: Row(
@@ -253,7 +261,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: amountColor.withOpacity(0.14),
+                color: amountColor.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -269,9 +277,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 children: [
                   Text(
                     transaction.category,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
+                      color: colors.textPrimary,
                     ),
                   ),
                   if (note.isNotEmpty) ...[
@@ -279,7 +288,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     Text(
                       note,
                       style: TextStyle(
-                        color: Colors.grey.shade400,
+                        color: colors.textSecondary,
                         fontSize: 12,
                         height: 1.3,
                       ),
@@ -327,8 +336,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   // ---------- Day header row ----------
   Widget _buildDayHeader(DateTime day) {
+    final colors = Theme.of(context).colorScheme;
     final balance = _balanceForDay(day);
-    final balanceColor = _amountColor(balance);
+    final balanceColor = _amountColor(balance, colors);
     final dayLabel =
         '${_dayHeaderFormatter.format(day)} (${_dayOfWeekFormatter.format(day)})';
 
@@ -339,7 +349,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           Text(
             dayLabel,
             style: TextStyle(
-              color: Colors.grey.shade300,
+              color: colors.textSecondary,
               fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
@@ -360,6 +370,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   // ---------- Grouped transaction list ----------
   Widget _buildTransactionList() {
+    final colors = Theme.of(context).colorScheme;
+
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -379,14 +391,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
           Icon(
             Icons.event_note_rounded,
             size: 40,
-            color: Colors.grey.shade600,
+            color: colors.textTertiary,
           ),
           const SizedBox(height: 12),
           Center(
             child: Text(
               'Không có giao dịch trong tháng này.',
               style: TextStyle(
-                color: Colors.grey.shade400,
+                color: colors.textSecondary,
                 fontSize: 14,
               ),
             ),
@@ -429,6 +441,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -450,9 +464,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     sixWeekMonthsEnforced: true,
                     rowHeight: rowHeight,
                     daysOfWeekHeight: 28,
-                    headerStyle: const HeaderStyle(
+                    headerStyle: HeaderStyle(
                       formatButtonVisible: false,
                       titleCentered: true,
+                      titleTextStyle: TextStyle(
+                        color: colors.textPrimary,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      leftChevronIcon: Icon(
+                        Icons.chevron_left,
+                        color: colors.textPrimary,
+                      ),
+                      rightChevronIcon: Icon(
+                        Icons.chevron_right,
+                        color: colors.textPrimary,
+                      ),
                     ),
                     calendarStyle: const CalendarStyle(
                       outsideDaysVisible: true,
@@ -466,11 +493,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     ),
                     daysOfWeekStyle: DaysOfWeekStyle(
                       weekdayStyle: TextStyle(
-                        color: Colors.grey.shade300,
+                        color: colors.textSecondary,
                         fontWeight: FontWeight.w600,
                       ),
                       weekendStyle: TextStyle(
-                        color: Colors.red.shade200,
+                        color: Colors.red.shade300,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -533,16 +560,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   children: [
                     Text(
                       'Chi tiết tháng ${DateFormat('MM/yyyy').format(_focusedDay)}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
+                        color: colors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${_transactionsForMonth(_focusedDay).length} giao dịch',
                       style: TextStyle(
-                        color: Colors.grey.shade400,
+                        color: colors.textSecondary,
                         fontSize: 13,
                       ),
                     ),
@@ -562,17 +590,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
 }
 
 // ---------------------------------------------------------------------------
-// Helper sealed classes for the grouped list
+// Helper classes for the grouped list
 // ---------------------------------------------------------------------------
 
-sealed class _ListItem {}
+/// Base class for list items used in the transaction list.
+abstract class _ListItem {}
 
-final class _DayHeaderItem extends _ListItem {
+/// Represents a day header in the grouped list.
+class _DayHeaderItem extends _ListItem {
   _DayHeaderItem(this.day);
   final DateTime day;
 }
 
-final class _TransactionItem extends _ListItem {
+/// Represents a transaction entry in the grouped list.
+class _TransactionItem extends _ListItem {
   _TransactionItem(this.transaction);
   final Transaction transaction;
 }

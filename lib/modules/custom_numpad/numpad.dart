@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
+
 // Định nghĩa kiểu hàm callback khi một phím được bấm
 typedef NumpadCallback = void Function(String value);
 
@@ -136,6 +138,7 @@ class CustomNumpad extends StatelessWidget {
 
   // Nút "Hoàn thành" — pill button canh phải (cột số 3)
   Widget _buildDoneButton(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     final callback = onDone ?? () => Navigator.of(context).pop();
     return SizedBox(
       width: buttonSize + 16, // cùng vùng chiếm chỗ với nút số
@@ -144,26 +147,26 @@ class CustomNumpad extends StatelessWidget {
         onTap: callback,
         child: Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF2C2C2E),
+            color: colors.numpadDoneBg,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Colors.white.withOpacity(0.12),
+              color: colors.numpadDoneBorder,
             ),
           ),
           alignment: Alignment.center,
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 Icons.keyboard_hide_rounded,
-                color: Color(0xFF636366),
+                color: colors.numpadDoneIcon,
                 size: 16,
               ),
-              SizedBox(width: 5),
+              const SizedBox(width: 5),
               Text(
                 'Xong',
                 style: TextStyle(
-                  color: Color(0xFFAEAEB2),
+                  color: colors.numpadDoneText,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.2,

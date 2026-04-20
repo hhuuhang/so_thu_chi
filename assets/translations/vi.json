@@ -23,12 +23,19 @@
   "reportIncome": "Thu nhập",
   "reportNet": "Thu chi",
   "reportSearch": "Tìm kiếm",
-  "reportSearchHint": "Tìm kiếm danh mục hoặc ghi chú",
+  "reportSearchHint": "Tìm kiếm giao dịch",
   "reportSearchResultFor": "Kết quả cho",
   "reportClearFilter": "Xóa lọc",
   "reportNoDataInRange": "Chưa có dữ liệu trong kỳ này.",
   "reportNoSearchResults": "Không tìm thấy kết quả phù hợp.",
   "reportTransactionsLabel": "giao dịch",
   "selectLanguage": "Chọn ngôn ngữ",
-  "hello": "Xin chào"
+  "hello": "Xin chào",
+  "settingsTheme": "Giao diện",
+  "themeLight": "Sáng",
+  "themeDark": "Tối",
+  "themeSystem": "Hệ thống",
+  "settingsGeneral": "Chung",
+  "settingsAbout": "Giới thiệu",
+  "appVersion": "Phiên bản"
 }

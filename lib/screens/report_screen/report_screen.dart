@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../category_catalog.dart';
 import '../../models/transaction.dart';
+import '../../theme/app_colors.dart';
 import 'report_controller.dart';
 
 class ReportScreen extends StatefulWidget {
@@ -96,6 +97,7 @@ class _ReportScreenState extends State<ReportScreen> {
     CategoryBreakdown item,
     Color accentColor,
   ) async {
+    final colors = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toString();
     final dateFormatter = DateFormat('dd/MM/yyyy • HH:mm', locale);
 
@@ -112,12 +114,12 @@ class _ReportScreenState extends State<ReportScreen> {
           builder: (context, scrollController) {
             return Container(
               decoration: BoxDecoration(
-                color: Colors.grey.shade900,
+                color: colors.bottomSheetBg,
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(28),
                 ),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.08),
+                  color: colors.subtleDivider,
                 ),
               ),
               child: Column(
@@ -127,7 +129,7 @@ class _ReportScreenState extends State<ReportScreen> {
                     width: 42,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.16),
+                      color: colors.bottomSheetHandle,
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
@@ -139,7 +141,7 @@ class _ReportScreenState extends State<ReportScreen> {
                           width: 46,
                           height: 46,
                           decoration: BoxDecoration(
-                            color: accentColor.withOpacity(0.16),
+                            color: accentColor.withValues(alpha: 0.16),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Icon(
@@ -155,16 +157,17 @@ class _ReportScreenState extends State<ReportScreen> {
                             children: [
                               Text(
                                 item.name,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w800,
+                                  color: colors.textPrimary,
                                 ),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 '${item.transactions.length} ${'reportTransactionsLabel'.tr()}',
                                 style: TextStyle(
-                                  color: Colors.grey.shade400,
+                                  color: colors.textSecondary,
                                   fontSize: 13,
                                 ),
                               ),
@@ -179,8 +182,8 @@ class _ReportScreenState extends State<ReportScreen> {
                           ),
                           style: TextStyle(
                             color: item.type == 'income'
-                                ? Colors.lightBlue.shade300
-                                : Colors.red.shade400,
+                                ? colors.incomeAccent
+                                : colors.expenseColor,
                             fontSize: 20,
                             fontWeight: FontWeight.w800,
                           ),
@@ -194,7 +197,7 @@ class _ReportScreenState extends State<ReportScreen> {
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                       itemCount: item.transactions.length,
                       separatorBuilder: (_, __) => Divider(
-                        color: Colors.white.withOpacity(0.08),
+                        color: colors.subtleDivider,
                         height: 1,
                       ),
                       itemBuilder: (context, index) {
@@ -210,16 +213,17 @@ class _ReportScreenState extends State<ReportScreen> {
                                   children: [
                                     Text(
                                       _transactionTitle(transaction),
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w700,
+                                        color: colors.textPrimary,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       dateFormatter.format(transaction.date),
                                       style: TextStyle(
-                                        color: Colors.grey.shade400,
+                                        color: colors.textSecondary,
                                         fontSize: 12,
                                       ),
                                     ),
@@ -237,8 +241,8 @@ class _ReportScreenState extends State<ReportScreen> {
                                 ),
                                 style: TextStyle(
                                   color: item.type == 'income'
-                                      ? Colors.lightBlue.shade300
-                                      : Colors.red.shade400,
+                                      ? colors.incomeAccent
+                                      : colors.expenseColor,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -259,6 +263,8 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Widget _buildTopToolbar() {
+    final colors = Theme.of(context).colorScheme;
+
     return Row(
       children: [
         const SizedBox(width: 44, height: 44),
@@ -267,7 +273,7 @@ class _ReportScreenState extends State<ReportScreen> {
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.42),
+                color: colors.toolbarBg,
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Row(
@@ -299,10 +305,10 @@ class _ReportScreenState extends State<ReportScreen> {
         IconButton(
           tooltip: 'reportSearch'.tr(),
           onPressed: _handleSearchPressed,
-          icon: const Icon(
+          icon: Icon(
             Icons.search_rounded,
             size: 38,
-            color: Colors.white,
+            color: colors.textPrimary,
           ),
         ),
       ],
@@ -310,6 +316,8 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Widget _buildPeriodNavigator() {
+    final colors = Theme.of(context).colorScheme;
+
     return Row(
       children: [
         IconButton(
@@ -320,8 +328,9 @@ class _ReportScreenState extends State<ReportScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
             decoration: BoxDecoration(
-              color: Colors.grey.shade800,
+              color: colors.elevatedCardBg,
               borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: colors.cardBorder),
             ),
             child: Center(
               child: Wrap(
@@ -331,16 +340,17 @@ class _ReportScreenState extends State<ReportScreen> {
                 children: [
                   Text(
                     _controller.periodTitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w800,
+                      color: colors.textPrimary,
                     ),
                   ),
                   Text(
                     '(${_controller.periodRangeLabel})',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey.shade300,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ],
@@ -357,6 +367,8 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Widget _buildSummaryCards() {
+    final colors = Theme.of(context).colorScheme;
+
     return Column(
       children: [
         Row(
@@ -365,7 +377,7 @@ class _ReportScreenState extends State<ReportScreen> {
               child: _SummaryCard(
                 label: 'reportExpense'.tr(),
                 value: _formatSignedAmount(context, -_controller.expense),
-                valueColor: Colors.red.shade400,
+                valueColor: colors.expenseColor,
               ),
             ),
             const SizedBox(width: 10),
@@ -377,7 +389,7 @@ class _ReportScreenState extends State<ReportScreen> {
                   _controller.income,
                   alwaysShowSign: true,
                 ),
-                valueColor: Colors.lightBlue.shade300,
+                valueColor: colors.incomeAccent,
               ),
             ),
           ],
@@ -391,8 +403,8 @@ class _ReportScreenState extends State<ReportScreen> {
             alwaysShowSign: _controller.balance > 0,
           ),
           valueColor: _controller.balance < 0
-              ? Colors.red.shade400
-              : (_controller.balance > 0 ? Colors.lightBlue.shade300 : Colors.white),
+              ? colors.expenseColor
+              : (_controller.balance > 0 ? colors.incomeAccent : colors.textPrimary),
           isFullWidth: true,
         ),
       ],
@@ -400,10 +412,12 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Widget _buildBreakdownSwitch() {
+    final colors = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: Colors.white.withOpacity(0.14)),
+          bottom: BorderSide(color: colors.strongDivider),
         ),
       ),
       child: Row(
@@ -442,14 +456,16 @@ class _ReportScreenState extends State<ReportScreen> {
       return const SizedBox.shrink();
     }
 
+    final colors = Theme.of(context).colorScheme;
+
     return Container(
       margin: const EdgeInsets.only(top: 14),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.28),
+        color: colors.bannerBg,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: Colors.white.withOpacity(0.08),
+          color: colors.bannerBorder,
         ),
       ),
       child: Row(
@@ -457,13 +473,13 @@ class _ReportScreenState extends State<ReportScreen> {
           Icon(
             Icons.search_rounded,
             size: 18,
-            color: Colors.blue.shade300,
+            color: colors.primary,
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               '${'reportSearchResultFor'.tr()} "${_controller.searchQuery}"',
-              style: const TextStyle(fontSize: 13),
+              style: TextStyle(fontSize: 13, color: colors.textPrimary),
             ),
           ),
           TextButton(
@@ -476,6 +492,7 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Widget _buildPieChartSection() {
+    final colors = Theme.of(context).colorScheme;
     final categories = _controller.activeBreakdown;
 
     if (categories.isEmpty) {
@@ -485,14 +502,14 @@ class _ReportScreenState extends State<ReportScreen> {
           children: [
             Icon(
               Icons.pie_chart_outline_rounded,
-              color: Colors.grey.shade600,
+              color: colors.textTertiary,
               size: 46,
             ),
             const SizedBox(height: 12),
             Text(
               'reportNoDataInRange'.tr(),
               style: TextStyle(
-                color: Colors.grey.shade400,
+                color: colors.textSecondary,
                 fontSize: 15,
               ),
             ),
@@ -507,7 +524,8 @@ class _ReportScreenState extends State<ReportScreen> {
       final index = entry.key;
       final item = entry.value;
       final isTouched = index == _touchedSectionIndex;
-      final color = colorForCategory(item.name, selectedType.name);
+      final color = colorForCategory(item.name, selectedType.name,
+          isDark: colors.brightness == Brightness.dark);
       final showLabel = item.percentage >= 0.08 || isTouched;
 
       return PieChartSectionData(
@@ -553,7 +571,9 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Widget _buildCategoryRow(CategoryBreakdown item, int index) {
-    final color = colorForCategory(item.name, _controller.activeType.name);
+    final colors = Theme.of(context).colorScheme;
+    final color = colorForCategory(item.name, _controller.activeType.name,
+        isDark: colors.brightness == Brightness.dark);
 
     return InkWell(
       onTap: () => _showCategoryDetails(item, color),
@@ -561,7 +581,7 @@ class _ReportScreenState extends State<ReportScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
         decoration: BoxDecoration(
           border: Border(
-            bottom: BorderSide(color: Colors.white.withOpacity(0.08)),
+            bottom: BorderSide(color: colors.subtleDivider),
           ),
         ),
         child: Row(
@@ -578,9 +598,10 @@ class _ReportScreenState extends State<ReportScreen> {
             Expanded(
               child: Text(
                 item.name,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
+                  color: colors.textPrimary,
                 ),
               ),
             ),
@@ -589,16 +610,17 @@ class _ReportScreenState extends State<ReportScreen> {
               children: [
                 Text(
                   _formatAmount(context, item.amount),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
+                    color: colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   '${(item.percentage * 100).toStringAsFixed(1)} %',
                   style: TextStyle(
-                    color: Colors.grey.shade400,
+                    color: colors.textSecondary,
                     fontSize: 13,
                   ),
                 ),
@@ -607,7 +629,7 @@ class _ReportScreenState extends State<ReportScreen> {
             const SizedBox(width: 10),
             Icon(
               Icons.chevron_right_rounded,
-              color: Colors.grey.shade500,
+              color: colors.textTertiary,
               size: 30,
             ),
           ],
@@ -618,6 +640,8 @@ class _ReportScreenState extends State<ReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return ListenableBuilder(
       listenable: _controller,
       builder: (context, child) {
@@ -627,8 +651,7 @@ class _ReportScreenState extends State<ReportScreen> {
                 ? const Center(child: CircularProgressIndicator())
                 : RefreshIndicator(
                     onRefresh: _controller.loadTransactions,
-                    color: Colors.blue.shade300,
-                    backgroundColor: Colors.grey.shade900,
+                    color: colors.primary,
                     child: CustomScrollView(
                       physics: const AlwaysScrollableScrollPhysics(
                         parent: BouncingScrollPhysics(),
@@ -667,7 +690,7 @@ class _ReportScreenState extends State<ReportScreen> {
                                       : 'reportNoDataInRange'.tr(),
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    color: Colors.grey.shade400,
+                                    color: colors.textSecondary,
                                     fontSize: 15,
                                   ),
                                 ),
@@ -707,12 +730,14 @@ class _ReportModeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.grey.shade600 : Colors.transparent,
+          color: isSelected ? colors.chipSelectedBg : Colors.transparent,
           borderRadius: BorderRadius.circular(14),
         ),
         alignment: Alignment.center,
@@ -721,7 +746,9 @@ class _ReportModeChip extends StatelessWidget {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: Colors.white.withOpacity(isSelected ? 1 : 0.92),
+            color: isSelected
+                ? colors.chipSelectedText
+                : colors.chipUnselectedText,
           ),
         ),
       ),
@@ -744,6 +771,8 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
@@ -751,10 +780,10 @@ class _SummaryCard extends StatelessWidget {
         vertical: isFullWidth ? 18 : 16,
       ),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.16),
+        color: colors.summaryCardBg,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: Colors.white.withOpacity(0.16),
+          color: colors.summaryCardBorder,
         ),
       ),
       child: Column(
@@ -764,7 +793,7 @@ class _SummaryCard extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey.shade300,
+              color: colors.textSecondary,
             ),
           ),
           const SizedBox(height: 6),
@@ -799,6 +828,8 @@ class _BreakdownTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return InkWell(
       onTap: onTap,
       child: Column(
@@ -810,7 +841,7 @@ class _BreakdownTab extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: isSelected ? Colors.blue.shade300 : Colors.white,
+                color: isSelected ? colors.primary : colors.textPrimary,
               ),
             ),
           ),
@@ -818,7 +849,7 @@ class _BreakdownTab extends StatelessWidget {
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOut,
             height: 3,
-            color: isSelected ? Colors.blue.shade300 : Colors.transparent,
+            color: isSelected ? colors.primary : Colors.transparent,
           ),
         ],
       ),
@@ -860,18 +891,19 @@ class _ReportSearchDelegate extends SearchDelegate<String?> {
   @override
   ThemeData appBarTheme(BuildContext context) {
     final baseTheme = Theme.of(context);
+    final colors = baseTheme.colorScheme;
     return baseTheme.copyWith(
-      scaffoldBackgroundColor: Colors.grey.shade900,
+      scaffoldBackgroundColor: colors.surface,
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.grey.shade900,
-        foregroundColor: Colors.white,
+        backgroundColor: colors.surface,
+        foregroundColor: colors.onSurface,
         elevation: 0,
       ),
-      inputDecorationTheme: const InputDecorationTheme(
+      inputDecorationTheme: InputDecorationTheme(
         border: InputBorder.none,
-        hintStyle: TextStyle(color: Colors.grey),
+        hintStyle: TextStyle(color: colors.textTertiary),
       ),
-      textTheme: baseTheme.textTheme.apply(bodyColor: Colors.white),
+      textTheme: baseTheme.textTheme.apply(bodyColor: colors.onSurface),
     );
   }
 
@@ -915,6 +947,7 @@ class _ReportSearchDelegate extends SearchDelegate<String?> {
   }
 
   Widget _buildResultList(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     final results = _matchResults(query).toList();
 
     if (results.isEmpty) {
@@ -922,7 +955,7 @@ class _ReportSearchDelegate extends SearchDelegate<String?> {
         child: Text(
           'reportNoSearchResults'.tr(),
           style: TextStyle(
-            color: Colors.grey.shade400,
+            color: colors.textSecondary,
             fontSize: 15,
           ),
         ),
@@ -933,7 +966,7 @@ class _ReportSearchDelegate extends SearchDelegate<String?> {
       padding: const EdgeInsets.symmetric(vertical: 12),
       itemCount: results.length,
       separatorBuilder: (_, __) => Divider(
-        color: Colors.white.withOpacity(0.08),
+        color: colors.subtleDivider,
         height: 1,
       ),
       itemBuilder: (context, index) {
@@ -942,19 +975,19 @@ class _ReportSearchDelegate extends SearchDelegate<String?> {
           onTap: () => close(context, query.trim().isEmpty ? item.name : query),
           title: Text(
             item.name,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: colors.textPrimary,
               fontWeight: FontWeight.w700,
             ),
           ),
           subtitle: Text(
             '${item.transactions.length} ${'reportTransactionsLabel'.tr()}',
-            style: TextStyle(color: Colors.grey.shade400),
+            style: TextStyle(color: colors.textSecondary),
           ),
           trailing: Text(
             formatAmount(item.amount),
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: colors.textPrimary,
               fontWeight: FontWeight.w700,
             ),
           ),

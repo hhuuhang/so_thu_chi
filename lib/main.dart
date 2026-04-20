@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
+import 'providers/theme_provider.dart';
 import 'screens/calendar_screen/calendar_screen.dart';
 import 'screens/input_screen/input_controller.dart';
 import 'screens/input_screen/input_screen.dart';
 import 'screens/report_screen/report_screen.dart';
 import 'screens/setting_screen/setting_screen.dart';
+import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +35,7 @@ class AppBootstrap extends StatelessWidget {
       child: MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => InputController()),
+          ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ],
         child: const MyApp(),
       ),
@@ -45,34 +48,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData darkTheme = ThemeData.dark().copyWith(
-      scaffoldBackgroundColor: Colors.grey.shade900,
-      appBarTheme: AppBarTheme(
-        backgroundColor: Colors.grey.shade900,
-        elevation: 0,
-        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 20),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: Colors.grey.shade800,
-        selectedItemColor: Colors.blue.shade300,
-        unselectedItemColor: Colors.grey.shade400,
-        type: BottomNavigationBarType.fixed,
-      ),
-      colorScheme: ColorScheme.dark(
-        primary: Colors.blue.shade300,
-        secondary: Colors.blue.shade300,
-      ),
-    );
-
-    return MaterialApp(
-      title: 'So Thu Chi',
-      debugShowCheckedModeBanner: false,
-      localizationsDelegates: context.localizationDelegates,
-      supportedLocales: context.supportedLocales,
-      locale: context.locale,
-      theme: darkTheme,
-      home: const MainScreen(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        return MaterialApp(
+          title: 'So Thu Chi',
+          debugShowCheckedModeBanner: false,
+          localizationsDelegates: context.localizationDelegates,
+          supportedLocales: context.supportedLocales,
+          locale: context.locale,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeProvider.themeMode,
+          home: const MainScreen(),
+        );
+      },
     );
   }
 }

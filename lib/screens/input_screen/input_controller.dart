@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
 import 'package:so_thu_chi/category_catalog.dart';
 import 'package:so_thu_chi/constants.dart';
 import 'package:so_thu_chi/database/database_helper.dart';
@@ -283,6 +284,7 @@ class _SuccessToastState extends State<_SuccessToast>
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final colors = Theme.of(context).colorScheme;
 
     return Align(
       alignment: Alignment.bottomCenter,
@@ -302,19 +304,19 @@ class _SuccessToastState extends State<_SuccessToast>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E1E1E),
+                  color: colors.toastBg,
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.10),
+                    color: colors.toastBorder,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.45),
+                      color: colors.shadowColor,
                       blurRadius: 24,
                       offset: const Offset(0, 8),
                     ),
                     BoxShadow(
-                      color: const Color(0xFF34C759).withOpacity(0.15),
+                      color: const Color(0xFF34C759).withValues(alpha: 0.15),
                       blurRadius: 20,
                       offset: const Offset(0, 4),
                     ),
@@ -327,7 +329,7 @@ class _SuccessToastState extends State<_SuccessToast>
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF34C759).withOpacity(0.15),
+                        color: const Color(0xFF34C759).withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -343,10 +345,10 @@ class _SuccessToastState extends State<_SuccessToast>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text(
+                          Text(
                             'Thành công',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: colors.textPrimary,
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
                               height: 1.2,
@@ -355,8 +357,8 @@ class _SuccessToastState extends State<_SuccessToast>
                           const SizedBox(height: 2),
                           Text(
                             widget.label,
-                            style: const TextStyle(
-                              color: Color(0xFF9E9E9E),
+                            style: TextStyle(
+                              color: colors.toastSubtitle,
                               fontSize: 13,
                               fontWeight: FontWeight.w400,
                             ),

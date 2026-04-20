@@ -78,7 +78,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.search_rounded));
     await tester.pumpAndSettle();
 
-    expect(find.text('Tìm kiếm danh mục hoặc ghi chú'), findsOneWidget);
+    expect(find.text('Tìm kiếm giao dịch'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'trưa');
     await tester.pumpAndSettle();

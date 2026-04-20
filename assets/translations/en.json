@@ -23,12 +23,19 @@
   "reportIncome": "Income",
   "reportNet": "Net",
   "reportSearch": "Search",
-  "reportSearchHint": "Search categories or notes",
+  "reportSearchHint": "Search transactions",
   "reportSearchResultFor": "Results for",
   "reportClearFilter": "Clear",
   "reportNoDataInRange": "No data in this period.",
   "reportNoSearchResults": "No matching results found.",
   "reportTransactionsLabel": "transactions",
   "selectLanguage": "Select Language",
-  "hello": "Hello"
+  "hello": "Hello",
+  "settingsTheme": "Appearance",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeSystem": "System",
+  "settingsGeneral": "General",
+  "settingsAbout": "About",
+  "appVersion": "Version"
 }
