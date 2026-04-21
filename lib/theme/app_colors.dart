@@ -9,11 +9,11 @@ extension AppColors on ColorScheme {
       : const Color(0xFFF5F5F7);
 
   Color get cardBg => brightness == Brightness.dark
-      ? Colors.white.withValues(alpha: 0.04)
+      ? Colors.white.withOpacity(0.04)
       : Colors.white;
 
   Color get cardBorder => brightness == Brightness.dark
-      ? Colors.white.withValues(alpha: 0.12)
+      ? Colors.white.withOpacity(0.12)
       : Colors.grey.shade200;
 
   Color get elevatedCardBg => brightness == Brightness.dark
@@ -35,11 +35,11 @@ extension AppColors on ColorScheme {
 
   // ── Divider / borders ────────────────────────────────────────
   Color get subtleDivider => brightness == Brightness.dark
-      ? Colors.white.withValues(alpha: 0.08)
+      ? Colors.white.withOpacity(0.08)
       : Colors.grey.shade200;
 
   Color get strongDivider => brightness == Brightness.dark
-      ? Colors.white.withValues(alpha: 0.14)
+      ? Colors.white.withOpacity(0.14)
       : Colors.grey.shade300;
 
   // ── Semantic finance colors ──────────────────────────────────
@@ -63,52 +63,52 @@ extension AppColors on ColorScheme {
   Color get chipSelectedText => Colors.white;
 
   Color get chipUnselectedText => brightness == Brightness.dark
-      ? Colors.white.withValues(alpha: 0.92)
+      ? Colors.white.withOpacity(0.92)
       : Colors.grey.shade700;
 
   // ── Search / banners ─────────────────────────────────────────
   Color get bannerBg => brightness == Brightness.dark
-      ? Colors.black.withValues(alpha: 0.28)
+      ? Colors.black.withOpacity(0.28)
       : Colors.blue.shade50;
 
   Color get bannerBorder => brightness == Brightness.dark
-      ? Colors.white.withValues(alpha: 0.08)
+      ? Colors.white.withOpacity(0.08)
       : Colors.blue.shade100;
 
   // ── Toolbar / overlay ────────────────────────────────────────
   Color get toolbarBg => brightness == Brightness.dark
-      ? Colors.black.withValues(alpha: 0.42)
+      ? Colors.black.withOpacity(0.42)
       : Colors.grey.shade200;
 
   // ── Summary card ─────────────────────────────────────────────
   Color get summaryCardBg => brightness == Brightness.dark
-      ? Colors.black.withValues(alpha: 0.16)
+      ? Colors.black.withOpacity(0.16)
       : Colors.white;
 
   Color get summaryCardBorder => brightness == Brightness.dark
-      ? Colors.white.withValues(alpha: 0.16)
+      ? Colors.white.withOpacity(0.16)
       : Colors.grey.shade200;
 
   // ── Shadow ───────────────────────────────────────────────────
   Color get shadowColor => brightness == Brightness.dark
-      ? Colors.black.withValues(alpha: 0.45)
-      : Colors.black.withValues(alpha: 0.08);
+      ? Colors.black.withOpacity(0.45)
+      : Colors.black.withOpacity(0.08);
 
   // ── Calendar specific ────────────────────────────────────────
   Color get calendarOutsideBg => brightness == Brightness.dark
-      ? Colors.white.withValues(alpha: 0.02)
+      ? Colors.white.withOpacity(0.02)
       : Colors.grey.shade100;
 
   Color get calendarNormalBg => brightness == Brightness.dark
-      ? Colors.white.withValues(alpha: 0.04)
+      ? Colors.white.withOpacity(0.04)
       : Colors.white;
 
   Color get calendarOutsideBorder => brightness == Brightness.dark
-      ? Colors.white.withValues(alpha: 0.08)
+      ? Colors.white.withOpacity(0.08)
       : Colors.grey.shade200;
 
   Color get calendarNormalBorder => brightness == Brightness.dark
-      ? Colors.white.withValues(alpha: 0.12)
+      ? Colors.white.withOpacity(0.12)
       : Colors.grey.shade300;
 
   Color get calendarOutsideText => brightness == Brightness.dark
@@ -133,7 +133,7 @@ extension AppColors on ColorScheme {
       : Colors.grey.shade200;
 
   Color get numpadDoneBorder => brightness == Brightness.dark
-      ? Colors.white.withValues(alpha: 0.12)
+      ? Colors.white.withOpacity(0.12)
       : Colors.grey.shade300;
 
   Color get numpadDoneText => brightness == Brightness.dark
@@ -150,7 +150,7 @@ extension AppColors on ColorScheme {
       : Colors.white;
 
   Color get toastBorder => brightness == Brightness.dark
-      ? Colors.white.withValues(alpha: 0.10)
+      ? Colors.white.withOpacity(0.10)
       : Colors.grey.shade200;
 
   Color get toastSubtitle => brightness == Brightness.dark
@@ -188,7 +188,7 @@ extension AppColors on ColorScheme {
       : Colors.white;
 
   Color get bottomSheetHandle => brightness == Brightness.dark
-      ? Colors.white.withValues(alpha: 0.16)
+      ? Colors.white.withOpacity(0.16)
       : Colors.grey.shade300;
 
   // ── Settings ─────────────────────────────────────────────────
@@ -203,4 +203,16 @@ extension AppColors on ColorScheme {
   Color get settingsIcon => brightness == Brightness.dark
       ? Colors.grey.shade300
       : Colors.grey.shade700;
+
+  // ── Confirm Button ───────────────────────────────────────────
+  Color get confirmButtonBg => brightness == Brightness.dark
+      ? const Color(0xFF6366F1) // Modern Indigo
+      : const Color(0xFF5B67F1);
+
+  Color get confirmButtonPressedBg => brightness == Brightness.dark
+      ? const Color(0xFF818CF8)
+      : const Color(0xFF4F46E5);
+
+  Color get confirmButtonText => Colors.white;
 }
+

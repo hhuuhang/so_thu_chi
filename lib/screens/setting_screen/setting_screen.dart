@@ -106,7 +106,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               gradient: LinearGradient(
                 colors: [
                   colors.primary,
-                  colors.primary.withValues(alpha: 0.7),
+                  colors.primary.withOpacity(0.7),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -221,7 +221,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: colors.brightness == Brightness.dark
-                  ? Colors.black.withValues(alpha: 0.3)
+                  ? Colors.black.withOpacity(0.3)
                   : Colors.grey.shade100,
               borderRadius: BorderRadius.circular(14),
             ),
@@ -279,7 +279,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: colors.primary.withValues(alpha: 0.3),
+                      color: colors.primary.withOpacity(0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -339,7 +339,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
               color: colors.brightness == Brightness.dark
-                  ? Colors.black.withValues(alpha: 0.2)
+                  ? Colors.black.withOpacity(0.2)
                   : Colors.grey.shade100,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: colors.subtleDivider),

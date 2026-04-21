@@ -30,7 +30,7 @@ class ThemeProvider extends ChangeNotifier {
     final saved = prefs.getString(_prefKey);
     if (saved != null) {
       _themeMode = ThemeMode.values.firstWhere(
-        (m) => m.name == saved,
+        (m) => m.toString().split('.').last == saved,
         orElse: () => ThemeMode.dark,
       );
       notifyListeners();
@@ -39,6 +39,6 @@ class ThemeProvider extends ChangeNotifier {
 
   Future<void> _saveToPrefs() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_prefKey, _themeMode.name);
+    await prefs.setString(_prefKey, _themeMode.toString().split('.').last);
   }
 }

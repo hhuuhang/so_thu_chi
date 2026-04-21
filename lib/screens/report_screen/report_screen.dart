@@ -141,7 +141,7 @@ class _ReportScreenState extends State<ReportScreen> {
                           width: 46,
                           height: 46,
                           decoration: BoxDecoration(
-                            color: accentColor.withValues(alpha: 0.16),
+                            color: accentColor.withOpacity(0.16),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Icon(
@@ -524,7 +524,7 @@ class _ReportScreenState extends State<ReportScreen> {
       final index = entry.key;
       final item = entry.value;
       final isTouched = index == _touchedSectionIndex;
-      final color = colorForCategory(item.name, selectedType.name,
+      final color = colorForCategory(item.name, selectedType.toString().split('.').last,
           isDark: colors.brightness == Brightness.dark);
       final showLabel = item.percentage >= 0.08 || isTouched;
 
@@ -572,7 +572,7 @@ class _ReportScreenState extends State<ReportScreen> {
 
   Widget _buildCategoryRow(CategoryBreakdown item, int index) {
     final colors = Theme.of(context).colorScheme;
-    final color = colorForCategory(item.name, _controller.activeType.name,
+    final color = colorForCategory(item.name, _controller.activeType.toString().split('.').last,
         isDark: colors.brightness == Brightness.dark);
 
     return InkWell(
@@ -642,8 +642,8 @@ class _ReportScreenState extends State<ReportScreen> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return ListenableBuilder(
-      listenable: _controller,
+    return AnimatedBuilder(
+      animation: _controller,
       builder: (context, child) {
         return Scaffold(
           body: SafeArea(

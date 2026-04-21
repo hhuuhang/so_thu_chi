@@ -316,7 +316,7 @@ class _SuccessToastState extends State<_SuccessToast>
                       offset: const Offset(0, 8),
                     ),
                     BoxShadow(
-                      color: const Color(0xFF34C759).withValues(alpha: 0.15),
+                      color: const Color(0xFF34C759).withOpacity(0.15),
                       blurRadius: 20,
                       offset: const Offset(0, 4),
                     ),
@@ -329,7 +329,7 @@ class _SuccessToastState extends State<_SuccessToast>
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF34C759).withValues(alpha: 0.15),
+                        color: const Color(0xFF34C759).withOpacity(0.15),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(

@@ -68,8 +68,9 @@ Color colorForCategory(String category, String type, {bool isDark = true}) {
     return color;
   } else {
     // In light mode, we need more contrast
-    if (color == Colors.amber)
+    if (color == Colors.amber) {
       return Colors.amber.shade800; // Amber is too light for white
+    }
     if (color == Colors.orange) return Colors.orange.shade800;
     if (color == Colors.green) return Colors.green.shade700;
     if (color == Colors.teal) return Colors.teal.shade700;

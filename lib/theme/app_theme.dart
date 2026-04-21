@@ -27,9 +27,9 @@ abstract final class AppTheme {
         type: BottomNavigationBarType.fixed,
       ),
       dividerTheme: DividerThemeData(
-        color: Colors.white.withValues(alpha: 0.08),
+        color: Colors.white.withOpacity(0.08),
       ),
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme(
         color: const Color(0xFF2C2C2E),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -70,7 +70,7 @@ abstract final class AppTheme {
       dividerTheme: DividerThemeData(
         color: Colors.grey.shade200,
       ),
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme(
         color: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),

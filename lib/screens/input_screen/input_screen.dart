@@ -23,7 +23,7 @@ class InputScreen extends StatelessWidget {
     final buttonColor = colors.numpadButtonBg;
     // When pressed, blend a little bit of the primary color with the button bg
     final pressedColor = Color.alphaBlend(
-      primaryColor.withValues(alpha: 0.3),
+      primaryColor.withOpacity(0.3),
       colors.numpadButtonBg,
     );
 
@@ -112,7 +112,7 @@ class InputScreen extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 color: isSelected
-                    ? categoryColor.withValues(alpha: 0.2)
+                    ? categoryColor.withOpacity(0.2)
                     : colors.inputCategoryBg,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
@@ -128,7 +128,7 @@ class InputScreen extends StatelessWidget {
                     icon,
                     color: isSelected
                         ? categoryColor
-                        : categoryColor.withValues(alpha: 0.7),
+                        : categoryColor.withOpacity(0.7),
                     size: 28,
                   ),
                   const SizedBox(height: 4),
@@ -138,7 +138,7 @@ class InputScreen extends StatelessWidget {
                     style: TextStyle(
                       color: isSelected
                           ? categoryColor
-                          : categoryColor.withValues(alpha: 0.7),
+                          : categoryColor.withOpacity(0.7),
                       fontSize: 12,
                     ),
                   ),
@@ -341,16 +341,16 @@ class InputScreen extends StatelessWidget {
                       backgroundColor:
                           WidgetStateProperty.resolveWith((states) {
                         if (states.contains(WidgetState.pressed)) {
-                          return controller.isEditMode
-                              ? Colors.blue.shade700
-                              : Colors.green.shade700;
+                          return colors.confirmButtonPressedBg;
                         }
-                        return controller.isEditMode
-                            ? Colors.blue.shade400
-                            : colors.primary;
+                        return colors.confirmButtonBg;
                       }),
                       foregroundColor:
-                          WidgetStateProperty.all(Colors.white),
+                          WidgetStateProperty.all(colors.confirmButtonText),
+                      elevation: WidgetStateProperty.all(4),
+                      shadowColor: WidgetStateProperty.all(
+                        colors.confirmButtonBg.withOpacity(0.4),
+                      ),
                     ),
                     onPressed: () => controller.addTransaction(context),
                     child: Text(

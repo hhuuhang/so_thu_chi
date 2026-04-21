@@ -158,7 +158,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final balance = _balanceForDay(day);
     final baseAmountColor = _amountColor(balance, colors);
     final amountColor = isOutside
-        ? baseAmountColor.withValues(alpha: 0.55)
+        ? baseAmountColor.withOpacity(0.55)
         : baseAmountColor;
     final borderColor = isSelected
         ? Colors.blue.shade300
@@ -168,9 +168,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ? colors.calendarOutsideBorder
                 : colors.calendarNormalBorder;
     final backgroundColor = isSelected
-        ? Colors.blue.withValues(alpha: 0.18)
+        ? Colors.blue.withOpacity(0.18)
         : isToday
-            ? Colors.lightBlue.withValues(alpha: 0.1)
+            ? Colors.lightBlue.withOpacity(0.1)
             : isOutside
                 ? colors.calendarOutsideBg
                 : colors.calendarNormalBg;
@@ -251,7 +251,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           color: colors.cardBg,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: amountColor.withValues(alpha: 0.18),
+            color: amountColor.withOpacity(0.18),
           ),
         ),
         child: Row(
@@ -261,7 +261,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: amountColor.withValues(alpha: 0.14),
+                color: amountColor.withOpacity(0.14),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
