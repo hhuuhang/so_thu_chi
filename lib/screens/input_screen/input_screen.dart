@@ -81,73 +81,68 @@ class InputScreen extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final categories = controller.currentCategories;
 
-    final rowCount = (categories.length / 3).ceil();
-    final gridHeight = rowCount * 1.1 * 100;
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: categories.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        childAspectRatio: 1.2,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+      ),
+      itemBuilder: (context, index) {
+        final categoryName = categories.keys.elementAt(index);
+        final icon = categories.values.elementAt(index);
+        final isSelected = controller.selectedCategory == categoryName;
+        final categoryColor = colorForCategory(
+            categoryName,
+            controller.currentType == TransactionType.expense
+                ? 'expense'
+                : 'income',
+            isDark: colors.brightness == Brightness.dark);
 
-    return SizedBox(
-      height: gridHeight,
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: categories.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          childAspectRatio: 1.2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-        ),
-        itemBuilder: (context, index) {
-          final categoryName = categories.keys.elementAt(index);
-          final icon = categories.values.elementAt(index);
-          final isSelected = controller.selectedCategory == categoryName;
-          final categoryColor = colorForCategory(
-              categoryName,
-              controller.currentType == TransactionType.expense
-                  ? 'expense'
-                  : 'income',
-              isDark: colors.brightness == Brightness.dark);
-
-          return GestureDetector(
-            onTap: () => controller.setSelectedCategory(categoryName),
-            child: Container(
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? categoryColor.withOpacity(0.2)
-                    : colors.inputCategoryBg,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: isSelected ? categoryColor : colors.inputCategoryBorder,
-                  width: isSelected ? 2 : 1,
-                ),
+        return GestureDetector(
+          onTap: () => controller.setSelectedCategory(categoryName),
+          child: Container(
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? categoryColor.withOpacity(0.2)
+                  : colors.inputCategoryBg,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color:
+                    isSelected ? categoryColor : colors.inputCategoryBorder,
+                width: isSelected ? 2 : 1,
               ),
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    icon,
+            ),
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  color: isSelected
+                      ? categoryColor
+                      : categoryColor.withOpacity(0.7),
+                  size: 28,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  categoryName,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
                     color: isSelected
                         ? categoryColor
                         : categoryColor.withOpacity(0.7),
-                    size: 28,
+                    fontSize: 12,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    categoryName,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: isSelected
-                          ? categoryColor
-                          : categoryColor.withOpacity(0.7),
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -326,7 +321,7 @@ class InputScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 _buildCategoryGrid(context, controller),
-                const SizedBox(height: 20),
+                const SizedBox(height: 40),
                 Center(
                   child: ElevatedButton(
                     style: ButtonStyle(
