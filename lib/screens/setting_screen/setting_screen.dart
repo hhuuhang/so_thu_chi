@@ -78,7 +78,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   icon: Icons.info_outline_rounded,
                   title: 'appVersion'.tr(),
                   trailing: Text(
-                    '1.0.0',
+                    '1.0.1',
                     style: TextStyle(
                       color: colors.textSecondary,
                       fontSize: 15,
@@ -232,24 +232,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   icon: Icons.light_mode_rounded,
                   label: 'themeLight'.tr(),
                   isSelected: themeProvider.isLight,
-                  onTap: () =>
-                      themeProvider.setThemeMode(ThemeMode.light),
+                  onTap: () => themeProvider.setThemeMode(ThemeMode.light),
                 ),
                 _buildThemeOption(
                   colors: colors,
                   icon: Icons.dark_mode_rounded,
                   label: 'themeDark'.tr(),
                   isSelected: themeProvider.isDark,
-                  onTap: () =>
-                      themeProvider.setThemeMode(ThemeMode.dark),
+                  onTap: () => themeProvider.setThemeMode(ThemeMode.dark),
                 ),
                 _buildThemeOption(
                   colors: colors,
                   icon: Icons.settings_brightness_rounded,
                   label: 'themeSystem'.tr(),
                   isSelected: themeProvider.isSystem,
-                  onTap: () =>
-                      themeProvider.setThemeMode(ThemeMode.system),
+                  onTap: () => themeProvider.setThemeMode(ThemeMode.system),
                 ),
               ],
             ),
@@ -291,9 +288,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Icon(
                 icon,
                 size: 20,
-                color: isSelected
-                    ? Colors.white
-                    : colors.textSecondary,
+                color: isSelected ? Colors.white : colors.textSecondary,
               ),
               const SizedBox(height: 4),
               Text(
@@ -301,9 +296,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: isSelected
-                      ? Colors.white
-                      : colors.textSecondary,
+                  color: isSelected ? Colors.white : colors.textSecondary,
                 ),
               ),
             ],

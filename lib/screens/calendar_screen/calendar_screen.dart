@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:vnlunar/vnlunar.dart' as vn;
 
 import '../../database/database_helper.dart';
 import '../../models/transaction.dart';
@@ -180,6 +181,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ? colors.calendarOutsideText
             : colors.textPrimary;
 
+    // Calculate Lunar Date using the vnlunar package
+    final solar = vn.Solar(day);
+    final lunar = vn.Lunar.fromSolar(solar);
+    final String lunarText;
+    if (day.day == 1) {
+      // First day of solar month: show day/month of lunar calendar
+      lunarText = '${lunar.day}/${lunar.month}${lunar.leapMonth == true ? 'n' : ''}';
+    } else {
+      // Subsequent days: show only lunar day
+      lunarText = '${lunar.day}';
+    }
+
+    final baseLunarColor = isSelected
+        ? colors.primary
+        : colors.textSecondary;
+    final lunarTextColor = isOutside
+        ? baseLunarColor.withOpacity(0.55)
+        : baseLunarColor;
+    final lunarFontWeight = day.day == 1 ? FontWeight.w700 : FontWeight.w500;
+
     return Container(
       margin: const EdgeInsets.all(1),
       decoration: BoxDecoration(
@@ -193,6 +214,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               constraints.maxWidth < 38 || constraints.maxHeight < 38;
           final dayFontSize = isCompact ? 12.0 : 15.0;
           final amountFontSize = isCompact ? 8.0 : 11.0;
+          final lunarFontSize = isCompact ? 8.0 : 10.0;
 
           return Padding(
             padding: EdgeInsets.all(isCompact ? 2 : 4),
@@ -200,13 +222,33 @@ class _CalendarScreenState extends State<CalendarScreen> {
               children: [
                 Align(
                   alignment: Alignment.topLeft,
-                  child: Text(
-                    '${day.day}',
-                    style: TextStyle(
-                      color: dayTextColor,
-                      fontSize: dayFontSize,
-                      fontWeight: FontWeight.w700,
-                      height: 1,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.topLeft,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${day.day}',
+                          style: TextStyle(
+                            color: dayTextColor,
+                            fontSize: dayFontSize,
+                            fontWeight: FontWeight.w700,
+                            height: 1,
+                          ),
+                        ),
+                        if (!isCompact) const SizedBox(height: 2),
+                        Text(
+                          lunarText,
+                          style: TextStyle(
+                            color: lunarTextColor,
+                            fontSize: lunarFontSize,
+                            fontWeight: lunarFontWeight,
+                            height: 1,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -346,15 +388,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
       padding: const EdgeInsets.only(top: 4, bottom: 6),
       child: Row(
         children: [
-          Text(
-            dayLabel,
-            style: TextStyle(
-              color: colors.textSecondary,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+          Expanded(
+            child: Text(
+              dayLabel,
+              style: TextStyle(
+                color: colors.textSecondary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          const Spacer(),
+          const SizedBox(width: 8),
           Text(
             _formatCompactAmount(balance),
             style: TextStyle(

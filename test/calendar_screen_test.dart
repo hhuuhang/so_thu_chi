@@ -68,8 +68,8 @@ void main() {
         await pumpCalendarAtSize(tester, size);
 
         expect(find.byType(CalendarScreen), findsOneWidget);
-        expect(find.text('Chi tiết thu chi 08/04/2026'), findsOneWidget);
-        expect(find.text('Mục: Ăn uống'), findsOneWidget);
+        expect(find.text('Chi tiết tháng 04/2026'), findsOneWidget);
+        expect(find.text('Ăn uống'), findsOneWidget);
         expect(tester.takeException(), isNull, reason: 'screen size $size');
       }
     },
